@@ -11,7 +11,7 @@ public class Server {
     private static final int PORT = 49152;
     private static HashSet<String> names = new HashSet<>();
     //private static HashSet<PrintWriter> writers = new HashSet<>();
-    private volatile static ArrayList<ClientInfo> clients = new ArrayList<>();
+    private static ArrayList<ClientInfo> clients = new ArrayList<>();
 
     public static void main(String[] args) throws Exception {
         System.out.println("The chat server is running.");
@@ -57,7 +57,13 @@ public class Server {
                     }
                 }
 
-                out.println("NAME_OK");
+                String toSend = "";
+
+                for (ClientInfo client: clients)
+                    toSend += client.getName() + " ";
+
+                out.println("NAME_OK " + clients.size() + " " + toSend);
+
 
                 for (ClientInfo user : clients) {
                     user.getWriter().println("GLOBAL " + name + " has joined the chat room!");
@@ -75,14 +81,29 @@ public class Server {
                     if (input.startsWith("PRIVATE_MESSAGE")) {
                         String[] messages = input.split(" ");
 
+                        // Inefficient solution
+                        String message = "";
+                        for (int i = 2; i < messages.length; i++) {
+                            message += messages[i] + " ";
+                        }
+
+
                         for (ClientInfo client : clients) {
                             if (client.getName().equalsIgnoreCase(messages[1])) {
-                                client.getWriter().println("MESSAGE " + name + " [Private Message]: " + input);
+                                client.getWriter().println("MESSAGE " + name + " [Private Message]: " + message);
                                 break;
                             }
                         }
 
-                        out.println("MESSAGE " + name + " [Private Message]: " + input);
+                        out.println("MESSAGE " + name + " [Private Message]: " + message);
+
+                    } else if (input.startsWith("GET_NAME_CLIENTS")){
+                        toSend = "";
+
+                        for (ClientInfo client: clients)
+                            toSend += client.getName() + " ";
+
+                        out.println("NAME_CLIENTS " + toSend);
 
                     } else {
                         for (ClientInfo client : clients) {

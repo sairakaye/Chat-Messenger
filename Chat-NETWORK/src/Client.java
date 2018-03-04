@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -76,6 +77,10 @@ public class Client extends JFrame {
         privateMessage.setText("Private Message");
         privateMessage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
+                String user = (String)userTable.getModel().getValueAt(userTable.getSelectedRow(), 0);
+
+                out.println("PRIVATE_MESSAGE " + user + " " + messageField.getText());
+                messageField.setText("");
 
             }
         });
@@ -148,6 +153,8 @@ public class Client extends JFrame {
         String userName = null;
         DefaultTableModel model = (DefaultTableModel) userTable.getModel();
 
+        String[] names = null;
+
         // Process all messages from server, according to the protocol.
         while (true) {
             String line = in.readLine();
@@ -155,12 +162,36 @@ public class Client extends JFrame {
                 userName = getUserName();
                 out.println(userName);
             } else if (line.startsWith("NAME_OK")) {
-                model.addRow(new String[] {userName});
-
+                model.addRow(new String[]{userName});
 
             } else if (line.startsWith("MESSAGE")) {
                 messageArea.append(line.substring(8) + "\n");
             }
+
+            // This is still buggy
+            if (line.startsWith("NAME_CLIENTS")) {
+                boolean isToAdd = true;
+                String[] temp = line.split(" ");
+
+                for (int i = 1; i < temp.length; i++) {
+                    for (int j = 0; i < model.getRowCount(); j++) {
+                        String compare = (String)model.getValueAt(j,0);
+
+                        if (compare.equalsIgnoreCase(temp[i])) {
+                            isToAdd = false;
+                            break;
+                        }
+
+                    }
+
+                    if (isToAdd == true) {
+                        model.addRow(new String[] {temp[i]});
+                    }
+                }
+            }
+
+            // Still buggy
+            out.println("GET_NAME_CLIENTS");
         }
     }
 
