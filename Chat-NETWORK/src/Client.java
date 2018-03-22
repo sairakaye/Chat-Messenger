@@ -128,7 +128,6 @@ public class Client extends JFrame {
 
 
     public Client() {
-
         // Layout GUI
         initComponents();
     }
@@ -168,13 +167,12 @@ public class Client extends JFrame {
                 messageArea.append(line.substring(8) + "\n");
             }
 
-            // This is still buggy
             if (line.startsWith("NAME_CLIENTS")) {
-                boolean isToAdd = true;
                 String[] temp = line.split(" ");
 
                 for (int i = 1; i < temp.length; i++) {
-                    for (int j = 0; i < model.getRowCount(); j++) {
+                    boolean isToAdd = true;
+                    for (int j = 0; j < model.getRowCount(); j++) {
                         String compare = (String)model.getValueAt(j,0);
 
                         if (compare.equalsIgnoreCase(temp[i])) {
@@ -184,13 +182,24 @@ public class Client extends JFrame {
 
                     }
 
-                    if (isToAdd == true) {
+                    if (isToAdd) {
                         model.addRow(new String[] {temp[i]});
                     }
                 }
             }
+            if (line.startsWith("DISCONNECT")){
+                String[] temp = line.split(" ");
+                System.out.println("dc " + temp[1]);
 
-            // Still buggy
+                for (int j = 0; j < model.getRowCount(); j++){
+                    System.out.println(model.getValueAt(j, 0));
+                    String compare = (String) model.getValueAt(j, 0);
+
+                    if (compare.equalsIgnoreCase(temp[1]))
+                        model.removeRow(j);
+                }
+            }
+
             out.println("GET_NAME_CLIENTS");
         }
     }

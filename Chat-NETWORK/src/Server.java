@@ -119,7 +119,12 @@ public class Server {
                     System.out.println(name + " is disconnected from the server.");
 
                     for (ClientInfo client : clients) {
-                        client.getWriter().println("MESSAGE " + name + " is disconnected.");
+                        client.getWriter().println("MESSAGE " + name + " has disconnected.");
+                    }
+
+                    for (ClientInfo client : clients){
+                        System.out.println("Client: " + client.getName() + " removes " + name);
+                        client.getWriter().println("DISCONNECT " + name);
                     }
                 }
                 if (out != null) {
