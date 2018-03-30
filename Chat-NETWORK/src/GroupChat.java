@@ -38,7 +38,7 @@ public class GroupChat extends JFrame {
 	}
 	*/
 
-	public GroupChat(String groupChatID, PrintWriter out, String user) {
+	public GroupChat(String groupChatID, PrintWriter out, String user, DefaultListModel onlineListModel) {
 		this.setTitle("Group Chat - ID #" + groupChatID);
 		this.out = out;
 		this.user = user;
@@ -94,6 +94,12 @@ public class GroupChat extends JFrame {
 		
 		btnInviteUser = new JButton("Invite User");
 		btnInviteUser.setBounds(429, 339, 145, 37);
+		btnInviteUser.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new InviteUser(GroupChat.this, onlineListModel);
+			}
+		});
 		contentPane.add(btnInviteUser);
 
 		this.setVisible(true);
@@ -111,4 +117,8 @@ public class GroupChat extends JFrame {
 		return listUsersModel;
 	}
 
+	//notify server that a user has been added to the group chat user
+	public void addUserSuccess(String user){
+		out.println("ADD_GC " + groupChatID + " " + user);
+	}
 }

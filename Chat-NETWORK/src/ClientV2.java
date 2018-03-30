@@ -153,7 +153,6 @@ public class ClientV2 extends JFrame {
         	    NewChatroom dialog = new NewChatroom(clientName, out);
         	    dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         	    dialog.setVisible(true);
-
         	}
         });
         btnCreateChatroom.setBounds(595, 474, 179, 46);
@@ -235,7 +234,7 @@ public class ClientV2 extends JFrame {
 
                 if (groupChatWindows == null) {
                     groupChatWindows = new ArrayList<>();
-                    groupChatWindows.add(new GroupChat(message[1], out, userName));
+                    groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel));
 
                     for (int i = 2; i < message.length; i++)
                         groupChatWindows.get(groupChatWindows.size()-1).getUserListModel().addElement(message[i]);
@@ -257,7 +256,7 @@ public class ClientV2 extends JFrame {
                         }
                 } else {
                     groupChatWindows = new ArrayList<>();
-                    groupChatWindows.add(new GroupChat(message[1], out, userName));
+                    groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel));
                     groupChatWindows.get(groupChatWindows.size()-1).appendMessage(toSend);
                 }
             } else if (line.startsWith("CR_MESSAGE")) {

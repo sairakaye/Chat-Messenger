@@ -74,6 +74,12 @@ public class NewChatroom extends JDialog {
 			}
 			{
 				JButton cancelButton = new JButton("Cancel");
+				cancelButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						NewChatroom.super.dispose();
+					}
+				});
 				cancelButton.setBounds(327, 5, 102, 23);
 				cancelButton.setActionCommand("Cancel");
 				buttonPane.add(cancelButton);

@@ -150,6 +150,28 @@ public class Server {
                         out.println("TO_GC " + groupChatID + " " + clientNames);
 
                         ++groupChatID;
+                    } else if (input.startsWith("ADD_GC")){
+                        String[] message = input.trim().split("\\s+");
+                        ArrayList<ClientInfo> groupChatUsers = groupChats.get(message[1]);
+                        String users = "";
+                        for (int i = 2; i < message.length; i++){
+                            for (ClientInfo client : clients){
+                                if (message[i].equalsIgnoreCase(client.getName())){
+                                    groupChatUsers.add(client);
+                                    break;
+                                }
+                            }
+                        }
+                        groupChats.put(message[1], groupChatUsers);
+
+                        for (ClientInfo client: groupChatUsers)
+                            users += client.getName() + " ";
+
+
+
+                        // For testing purposes
+                        out.println("TO_GC " + groupChatID + " " + groupChatUsers);
+
                     } else if (input.startsWith("GC_MES")){
                         String[] message = input.trim().split("\\s+");
                         ArrayList<ClientInfo> groupChatUsers = groupChats.get(message[1]);
