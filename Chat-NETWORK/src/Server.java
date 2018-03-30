@@ -1,3 +1,4 @@
+import javax.net.ssl.HandshakeCompletedEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -5,6 +6,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Server {
@@ -12,6 +14,11 @@ public class Server {
     private static HashSet<String> names = new HashSet<>();
     //private static HashSet<PrintWriter> writers = new HashSet<>();
     private static ArrayList<ClientInfo> clients = new ArrayList<>();
+    //private static ArrayList<Handler> handlers = new ArrayList<Handler>();
+    private static HashMap<String, ArrayList<ClientInfo>> groupChats = new HashMap<>();
+    private static HashMap<String, ArrayList<ClientInfo>> chatrooms = new HashMap<>();
+    private static HashMap<String, String> chatroomPasswords = new HashMap<>();
+    private static int groupChatID = 0;
 
     public static void main(String[] args) throws Exception {
         System.out.println("The chat server is running.");
@@ -19,6 +26,10 @@ public class Server {
 
         try {
             while (true) {
+                /*handlers.add(new Handler(listener.accept()));
+                handlers.get(handlers.size()-1).start();
+                */
+
                 new Handler(listener.accept()).start();
             }
         } finally {
@@ -66,7 +77,7 @@ public class Server {
 
 
                 for (ClientInfo user : clients) {
-                    user.getWriter().println("GLOBAL " + name + " has joined the chat room!");
+                    user.getWriter().println("MESSAGE " + name + " has joined the chat room!");
                 }
 
                 user = new ClientInfo(name, out);
@@ -97,14 +108,126 @@ public class Server {
 
                         out.println("MESSAGE " + name + " [Private Message]: " + message);
 
-                    } else if (input.startsWith("GET_NAME_CLIENTS")){
+                    } else if (input.startsWith("GET_NAME_CLIENTS")) {
                         toSend = "";
 
-                        for (ClientInfo client: clients)
+                        for (ClientInfo client : clients)
                             toSend += client.getName() + " ";
 
                         out.println("NAME_CLIENTS " + toSend);
 
+                    } else if (input.startsWith("GET_CHATROOMS")) {
+                        toSend = "";
+
+                        for (String key : chatrooms.keySet())
+                            toSend += key + " ";
+
+                        System.out.println(toSend);
+
+                        out.println("CHATROOMS " + toSend);
+                    } else if (input.startsWith("CREATE_GC")) {
+                        String[] message = input.trim().split("\\s+");
+                        ArrayList<ClientInfo> clientsList = new ArrayList<ClientInfo>();
+                        String clientNames = "";
+
+                        for (int i = 1; i < message.length; i++) {
+                            for (ClientInfo client: clients) {
+                                if (message[i].equalsIgnoreCase(client.getName())) {
+                                    clientsList.add(client);
+                                    break;
+                                }
+                            }
+                        }
+
+                        groupChats.put(Integer.toString(groupChatID), clientsList);
+
+                        for (ClientInfo client: clientsList)
+                            clientNames += client.getName() + " ";
+
+
+
+                        // For testing purposes
+                        out.println("TO_GC " + groupChatID + " " + clientNames);
+
+                        ++groupChatID;
+                    } else if (input.startsWith("GC_MES")){
+                        String[] message = input.trim().split("\\s+");
+                        ArrayList<ClientInfo> groupChatUsers = groupChats.get(message[1]);
+                        String deliver = "";
+
+                        for (int i = 2; i < message.length; i++)
+                            deliver += message[i] + " ";
+
+                        for (ClientInfo client: groupChatUsers)
+                            client.getWriter().println("SEND_GC " + message[1] + " " + deliver);
+                    } else if (input.startsWith("GET_NAMES_IN_GC")) {
+                        String[] message = input.trim().split("\\s+");
+                        String key = message[1];
+                        ArrayList<ClientInfo> groupChatUsers = groupChats.get(key);
+                        String names = "";
+
+                        for (ClientInfo c: groupChatUsers)
+                            names += c.getName() + " ";
+
+                        out.println("NAMES_IN_GC " + message[1] + " " + names);
+                        System.out.println(names);
+                    } else if (input.startsWith("CREATE_CHATROOM")) {
+                        String[] message = input.split("\\s+");
+                        String roomName = message[1];
+                        ArrayList<ClientInfo> clientsList = chatrooms.get(roomName);
+
+
+                        // if not null ( later na yung hindi mag-aadd )
+                        if (clientsList == null) {
+                            clientsList = new ArrayList<ClientInfo>();
+
+                            for (ClientInfo client : clients) {
+                                if (client.getName().equalsIgnoreCase(message[3])) {
+                                    clientsList.add(client);
+                                    System.out.println(message[2] + " is added to a chatroom.");
+                                    break;
+                                }
+                            }
+
+                            chatrooms.put(roomName, clientsList);
+                            chatroomPasswords.put(roomName, message[2]);
+
+                            out.println("CR_MESSAGE " + roomName + " " + name + " has created the " + roomName + " chatroom.");
+                        }
+
+                    } else if (input.startsWith("JOIN_CHATROOM")) {
+                        String[] message = input.trim().split("\\s+");
+                        ArrayList<ClientInfo> curr = chatrooms.get(message[1]);
+
+                        String passwordCompare = chatroomPasswords.get(message[1]);
+
+                        if (passwordCompare.equals(message[2])) {
+                            for (ClientInfo client : clients) {
+                                if (client.getName().equalsIgnoreCase(message[3])) {
+                                    curr.add(client);
+                                    System.out.println(message[2] + " has joined the chatroom.");
+                                    break;
+                                }
+                            }
+
+                            for (ClientInfo client : curr) {
+                                client.getWriter().println("JOIN_CR_MESSAGE " + message[1] + " " + message[3] + " has joined the chatroom.");
+                            }
+                        }
+                    } else if (input.startsWith("TO_CR")) {
+                        String[] messages = input.trim().split("\\s+");
+                        ArrayList<ClientInfo> curr = chatrooms.get(messages[1]);
+
+                        String message = "";
+
+                        for (int i = 2; i < messages.length; i++) {
+                            message += messages[i] + " ";
+                        }
+
+                        for (ClientInfo client : curr) {
+                            if (client.getWriter() != null)
+                                client.getWriter().println("CR_MESSAGE " + messages[1] + " " + message);
+                        }
                     } else {
                         for (ClientInfo client : clients) {
                             client.getWriter().println("MESSAGE " + name + ": " + input);

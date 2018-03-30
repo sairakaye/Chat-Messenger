@@ -16,11 +16,15 @@ public class Client extends JFrame {
     private JButton chatroomButton;
     private JScrollPane userScrollPane;
     private JScrollPane messageScrollPane;
+    private JScrollPane chatroomScrollPane;
     private JTextArea messageArea;
     private JTextField messageField;
     private JButton privateMessage;
     private JButton sendButton;
     private JTable userTable;
+    private JTable chatroomTable;
+    private ArrayList<ChatroomGUI> openedChatrooms;
+    private String clientName;
 
     private void initComponents() {
 
@@ -32,6 +36,8 @@ public class Client extends JFrame {
         sendButton = new javax.swing.JButton();
         privateMessage = new javax.swing.JButton();
         chatroomButton = new javax.swing.JButton();
+        chatroomTable = new javax.swing.JTable();
+        chatroomScrollPane = new javax.swing.JScrollPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -66,6 +72,24 @@ public class Client extends JFrame {
 
         userScrollPane.setViewportView(userTable);
 
+        chatroomTable.setModel(new javax.swing.table.DefaultTableModel(
+                new Object [][] {
+
+                },
+                new String [] {
+                        "Chatrooms"
+                }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                    false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        chatroomScrollPane.setViewportView(chatroomTable);
+
         sendButton.setText("Send");
         sendButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -77,15 +101,25 @@ public class Client extends JFrame {
         privateMessage.setText("Private Message");
         privateMessage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
+                out.println("CREATE_CHATROOM TestingChatRoom " + clientName);
+                /*
                 String user = (String)userTable.getModel().getValueAt(userTable.getSelectedRow(), 0);
 
                 out.println("PRIVATE_MESSAGE " + user + " " + messageField.getText());
                 messageField.setText("");
+                */
 
             }
         });
 
         chatroomButton.setText("Chatroom [S O O N]");
+        chatroomButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                out.println("JOIN_CHATROOM TestingChatRoom " + clientName);
+
+            }
+        });
+
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -102,24 +136,29 @@ public class Client extends JFrame {
                                         .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(privateMessage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(chatroomButton, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))
-                                .addContainerGap(25, Short.MAX_VALUE))
+                                .addGap(22, 22, 22)
+                                .addComponent(chatroomScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
+                                .addContainerGap())
         );
         layout.setVerticalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addContainerGap(54, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(messageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 372, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(55, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(chatroomScrollPane)
                                         .addGroup(layout.createSequentialGroup()
-                                                .addComponent(userScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addComponent(messageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 372, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addComponent(userScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addGap(18, 18, 18)
+                                                                .addComponent(privateMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                .addComponent(chatroomButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                                 .addGap(18, 18, 18)
-                                                .addComponent(privateMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                .addComponent(chatroomButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(messageField)
-                                        .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE))
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                        .addComponent(messageField)
+                                                        .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE))))
                                 .addGap(23, 23, 23))
         );
 
@@ -140,7 +179,7 @@ public class Client extends JFrame {
                 JOptionPane.PLAIN_MESSAGE);
     }
 
-    private void run() throws IOException {
+    private synchronized void run() throws IOException {
 
         // Make connection and initialize streams
         String serverAddress = "127.0.0.1";
@@ -162,11 +201,42 @@ public class Client extends JFrame {
                 out.println(userName);
             } else if (line.startsWith("NAME_OK")) {
                 model.addRow(new String[]{userName});
+                clientName = userName;
 
             } else if (line.startsWith("MESSAGE")) {
                 messageArea.append(line.substring(8) + "\n");
+            } else if (line.startsWith("CR_MESSAGE")) {
+                String[] message = line.trim().split("\\s+");
+
+                if (openedChatrooms == null) {
+                    openedChatrooms = new ArrayList<>();
+                    openedChatrooms.add(new ChatroomGUI("TestingChatRoom", out, "kekez"));
+                    openedChatrooms.get(openedChatrooms.size()-1).appendMessage(line);
+                } else {
+                    for (ChatroomGUI c : openedChatrooms) {
+                        if (c.getChatroomName().equalsIgnoreCase(message[1]))
+                            c.appendMessage(line);
+                    }
+                }
             }
 
+
+            if (line.startsWith("DISCONNECT")){
+                String[] temp = line.trim().split("\\s+");
+                System.out.println("dc " + temp[1]);
+
+                System.out.println("This statement is executed");
+
+                for (int j = 0; j < model.getRowCount(); j++){
+                    System.out.println(model.getValueAt(j, 0));
+                    String compare = (String) model.getValueAt(j, 0);
+
+                    if (compare.equalsIgnoreCase(temp[1]))
+                        model.removeRow(j);
+                }
+            }
+
+            // Start of something
             if (line.startsWith("NAME_CLIENTS")) {
                 String[] temp = line.split(" ");
 
@@ -185,18 +255,6 @@ public class Client extends JFrame {
                     if (isToAdd) {
                         model.addRow(new String[] {temp[i]});
                     }
-                }
-            }
-            if (line.startsWith("DISCONNECT")){
-                String[] temp = line.split(" ");
-                System.out.println("dc " + temp[1]);
-
-                for (int j = 0; j < model.getRowCount(); j++){
-                    System.out.println(model.getValueAt(j, 0));
-                    String compare = (String) model.getValueAt(j, 0);
-
-                    if (compare.equalsIgnoreCase(temp[1]))
-                        model.removeRow(j);
                 }
             }
 
