@@ -268,7 +268,6 @@ public class Server {
                     }
 
                     for (ClientInfo client : clients){
-                        System.out.println("Client: " + client.getName() + " removes " + name);
                         client.getWriter().println("DISCONNECT " + name);
                     }
                 }

@@ -263,6 +263,7 @@ public class ClientV2 extends JFrame {
                 String[] message = line.trim().split("\\s+");
                 String toSend = "";
 
+
                 for (int i = 2; i < message.length; i++)
                     toSend += message[i] + " ";
 
@@ -276,6 +277,9 @@ public class ClientV2 extends JFrame {
                             c.appendMessage(toSend);
                     }
                 }
+
+                out.println("GET_CHATROOMS");
+
             } else if (line.startsWith("JOIN_CR_MESSAGE")) {
                 String[] message = line.trim().split("\\s+");
 
@@ -298,11 +302,20 @@ public class ClientV2 extends JFrame {
             } else if (line.startsWith("NAMES_IN_GC")) {
                 String[] message = line.trim().split("\\s+");
 
-                if (openedChatrooms != null) {
+                if (groupChatWindows != null) {
                     for (GroupChat g: groupChatWindows)
                         if (message[1].equalsIgnoreCase(g.getID())) {
-                            for (int i = 2; i < message.length; i++)
-                                g.getUserListModel().addElement(message[i]);
+                            for (int i = 2; i < message.length; i++) {
+                                int j = 0;
+                                boolean noDuplicate = true;
+                                while (j < g.getUserListModel().getSize() && noDuplicate){
+                                    if (g.getUserListModel().get(j).toString().equals(message[i]))
+                                        noDuplicate = false;
+                                    else j++;
+                                }
+                                if (noDuplicate)
+                                    g.getUserListModel().addElement(message[i]);
+                            }
                             break;
                         }
                 }
