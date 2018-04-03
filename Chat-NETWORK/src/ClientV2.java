@@ -18,11 +18,13 @@ public class ClientV2 extends JFrame {
     private JButton btnSend;
     private DefaultListModel onlineListModel;
     private DefaultListModel chatroomListModel;
+    private DefaultListModel filesListModel;
     private JButton btnPrivateMessage;
     private JButton btnFileTransfer;
     private JButton btnJoinChatroom;
     private JButton btnCreateChatroom;
     private JList listChatroom;
+    private JList listFiles;
 
     ObjectInputStream in;
     ObjectOutputStream out;
@@ -99,6 +101,7 @@ public class ClientV2 extends JFrame {
         // If needed
         onlineListModel = new DefaultListModel();
         chatroomListModel = new DefaultListModel();
+        filesListModel = new DefaultListModel();
 
         listOnline = new JList(onlineListModel);
         listOnline.setBounds(452, 40, 133, 248);
@@ -106,6 +109,10 @@ public class ClientV2 extends JFrame {
 
         listOnline.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
+        listFiles = new JList(filesListModel);
+        listFiles.setBounds(597, 319, 179, 90);
+        contentPane.add(listFiles);
+        
         btnPrivateMessage = new JButton("Private Message");
         btnPrivateMessage.setBounds(452, 398, 133, 41);
         contentPane.add(btnPrivateMessage);
@@ -154,7 +161,7 @@ public class ClientV2 extends JFrame {
         contentPane.add(btnCreateChatroom);
 
         listChatroom = new JList(chatroomListModel);
-        listChatroom.setBounds(595, 40, 179, 371);
+        listChatroom.setBounds(595, 40, 179, 248);
         contentPane.add(listChatroom);
         
         JLabel lblOnlineUsers = new JLabel("Online Users");
@@ -194,6 +201,13 @@ public class ClientV2 extends JFrame {
         });
         btnGroupChat.setBounds(452, 346, 133, 41);
         contentPane.add(btnGroupChat);
+        
+        JLabel lblFiles = new JLabel("Files");
+        lblFiles.setHorizontalAlignment(SwingConstants.CENTER);
+        lblFiles.setFont(new Font("Tahoma", Font.PLAIN, 14));
+        lblFiles.setBounds(597, 299, 179, 18);
+        contentPane.add(lblFiles);
+        
     }
 
     private String getUserName() {
