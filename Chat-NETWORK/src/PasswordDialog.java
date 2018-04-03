@@ -13,6 +13,8 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 
 public class PasswordDialog extends JDialog {
@@ -21,7 +23,7 @@ public class PasswordDialog extends JDialog {
 	private JTextField textField;
 	private JLabel lblPassword;
 	private String clientName;
-	private PrintWriter out;
+	private ObjectOutputStream out;
 	private String chatroomName;
 	/**
 	 * Launch the application.
@@ -37,7 +39,7 @@ public class PasswordDialog extends JDialog {
 	}
 
 	 */
-	public PasswordDialog(String chatroomName, String clientName, PrintWriter out) {
+	public PasswordDialog(String chatroomName, String clientName, ObjectOutputStream out) {
 		this.chatroomName = chatroomName;
 		this.clientName = clientName;
 		this.out = out;
@@ -63,7 +65,12 @@ public class PasswordDialog extends JDialog {
 				JButton okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						out.println("JOIN_CHATROOM " + chatroomName + " " + textField.getText() + " " + clientName);
+						try {
+							out.writeObject("JOIN_CHATROOM " + chatroomName + " " + textField.getText() + " " + clientName);
+							out.flush();
+						}catch(Exception ex){
+							ex.printStackTrace();
+						}
 						PasswordDialog.super.dispose();
 					}
 				});

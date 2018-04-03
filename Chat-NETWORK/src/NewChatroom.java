@@ -1,6 +1,3 @@
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -9,13 +6,13 @@ import javax.swing.JTextField;
 import javax.swing.JLabel;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.io.PrintWriter;
+import java.io.ObjectOutputStream;
 
 public class NewChatroom extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
 	private JTextField textField;
-	private PrintWriter out;
+	private ObjectOutputStream out;
 	private String clientName;
 	private JTextField passwordTextField;
 
@@ -36,7 +33,7 @@ public class NewChatroom extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public NewChatroom(String clientName, PrintWriter out) {
+	public NewChatroom(String clientName, ObjectOutputStream out) {
 		this.out = out;
 		this.clientName = clientName;
 		setBounds(100, 100, 450, 190);
@@ -63,7 +60,12 @@ public class NewChatroom extends JDialog {
 				JButton okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						out.println("CREATE_CHATROOM " + textField.getText() + " " + passwordTextField.getText() + " " + clientName);
+						try {
+							out.writeObject("CREATE_CHATROOM " + textField.getText() + " " + passwordTextField.getText() + " " + clientName);
+							out.flush();
+						}catch(Exception ex){
+							ex.printStackTrace();
+						}
 						NewChatroom.super.dispose();
 					}
 				});

@@ -1,6 +1,5 @@
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -18,8 +17,8 @@ public class GroupChat extends JFrame {
 	private JButton btnFileTransfer;
 	private JLabel lblUsersInGroup;
 	private JButton btnInviteUser;
-	private BufferedReader in;
-	private PrintWriter out;
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
 	private String user;
 	private String groupChatID;
 
@@ -38,7 +37,7 @@ public class GroupChat extends JFrame {
 	}
 	*/
 
-	public GroupChat(String groupChatID, PrintWriter out, String user, DefaultListModel onlineListModel) {
+	public GroupChat(String groupChatID, ObjectOutputStream out, String user, DefaultListModel onlineListModel) {
 		this.setTitle("Group Chat - ID #" + groupChatID);
 		this.out = out;
 		this.user = user;
@@ -61,7 +60,12 @@ public class GroupChat extends JFrame {
 
 		messageField.addActionListener(new ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				out.println("GC_MES " + groupChatID + " " + user + ": " + messageField.getText());
+				try {
+					out.writeObject("GC_MES " + groupChatID + " " + user + ": " + messageField.getText());
+					out.flush();
+				}catch(Exception e){
+					e.printStackTrace();
+				}
 				messageField.setText("");
 			}
 		});
@@ -76,7 +80,12 @@ public class GroupChat extends JFrame {
 		btnSend = new JButton("Send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				out.println("GC_MES " + groupChatID + " " + user + ": " + messageField.getText());
+				try {
+					out.writeObject("GC_MES " + groupChatID + " " + user + ": " + messageField.getText());
+					out.flush();
+				}catch(Exception ex){
+					ex.printStackTrace();
+				}
 				messageField.setText("");
 			}
 		});
@@ -85,6 +94,12 @@ public class GroupChat extends JFrame {
 		
 		btnFileTransfer = new JButton("Send File");
 		btnFileTransfer.setBounds(429, 291, 145, 37);
+		btnFileTransfer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
 		contentPane.add(btnFileTransfer);
 		
 		lblUsersInGroup = new JLabel("Users in Group Chat");
@@ -119,6 +134,11 @@ public class GroupChat extends JFrame {
 
 	//notify server that a user has been added to the group chat user
 	public void addUserSuccess(String user){
-		out.println("ADD_GC " + groupChatID + " " + user);
+		try {
+			out.writeObject("ADD_GC " + groupChatID + " " + user);
+			out.flush();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 }

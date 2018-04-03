@@ -1,6 +1,5 @@
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -17,8 +16,8 @@ public class Chatroom extends JFrame {
 	private JButton btnSend;
 	private JButton btnFileTransfer;
 	private JLabel lblChatroomUsers;
-	private BufferedReader in;
-	private PrintWriter out;
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
 	private String user;
 	private String chatroomName;
 
@@ -37,7 +36,7 @@ public class Chatroom extends JFrame {
 	}
 	*/
 
-	public Chatroom(String chatroomName, PrintWriter out, String user) {
+	public Chatroom(String chatroomName, ObjectOutputStream out, String user) {
 		this.setTitle("Chatroom: " + chatroomName);
 		this.out = out;
 		this.user = user;
@@ -60,7 +59,12 @@ public class Chatroom extends JFrame {
 
 		messageField.addActionListener(new ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				out.println("TO_CR " + chatroomName + " " + user + ": " + messageField.getText());
+				try {
+					out.writeObject("TO_CR " + chatroomName + " " + user + ": " + messageField.getText());
+					out.flush();
+				}catch(Exception ex){
+					ex.printStackTrace();
+				}
 				messageField.setText("");
 			}
 		});
@@ -75,7 +79,12 @@ public class Chatroom extends JFrame {
 		btnSend = new JButton("Send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				out.println("TO_CR " + chatroomName + " " + user + ": " + messageField.getText());
+				try {
+					out.writeObject("TO_CR " + chatroomName + " " + user + ": " + messageField.getText());
+					out.flush();
+				}catch(Exception ex){
+					ex.printStackTrace();
+				}
 				messageField.setText("");
 			}
 		});
@@ -84,6 +93,12 @@ public class Chatroom extends JFrame {
 		
 		btnFileTransfer = new JButton("Send File");
 		btnFileTransfer.setBounds(429, 339, 145, 37);
+		btnFileTransfer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
 		contentPane.add(btnFileTransfer);
 		
 		lblChatroomUsers = new JLabel("Chatroom Users");

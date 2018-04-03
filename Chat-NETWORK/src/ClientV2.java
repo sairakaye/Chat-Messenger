@@ -1,16 +1,11 @@
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableModel;
 import java.awt.Font;
 import java.util.List;
 
@@ -29,8 +24,8 @@ public class ClientV2 extends JFrame {
     private JButton btnCreateChatroom;
     private JList listChatroom;
 
-    BufferedReader in;
-    PrintWriter out;
+    ObjectInputStream in;
+    ObjectOutputStream out;
     private ArrayList<Chatroom> openedChatrooms;
     private ArrayList<GroupChat> groupChatWindows;
 
@@ -41,27 +36,6 @@ public class ClientV2 extends JFrame {
      * Launch the application.
      */
     public static void main(String[] args) {
-
-        /*
-        EventQueue.invokeLater(new Runnable() {
-            boolean isRunning = false;
-
-            public void run() {
-                try {
-                    ClientV2 frame = new ClientV2();
-                    frame.setVisible(true);
-
-                    if (isRunning == false) {
-                        frame.run();
-                        isRunning = true;
-                    }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        */
 
         ClientV2 frame = new ClientV2();
         frame.setVisible(true);
@@ -96,21 +70,28 @@ public class ClientV2 extends JFrame {
 
         messageField.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                out.println(messageField.getText());
+                try {
+                    out.writeObject(messageField.getText());
+                    out.flush();
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
                 messageField.setText("");
             }
         });
 
         btnSend = new JButton("Send");
-
         btnSend.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                out.println(messageField.getText());
+                try {
+                    out.writeObject(messageField.getText());
+                    out.flush();
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
                 messageField.setText("");
             }
         });
-
-
         btnSend.setBounds(452, 450, 133, 70);
         contentPane.add(btnSend);
 
@@ -189,7 +170,12 @@ public class ClientV2 extends JFrame {
                     toSend += list.get(i) + " ";
                 }
 
-                out.println(toSend);
+                try {
+                    out.writeObject(toSend);
+                    out.flush();
+                }catch (IOException ex){
+                    ex.printStackTrace();
+                }
         	}
         });
         btnGroupChat.setBounds(452, 346, 133, 41);
@@ -204,183 +190,203 @@ public class ClientV2 extends JFrame {
                 JOptionPane.PLAIN_MESSAGE);
     }
 
-    private void run() throws IOException {
+    private synchronized void run() throws IOException {
 
         // Make connection and initialize streams
         String serverAddress = "127.0.0.1";
         Socket socket = new Socket(serverAddress, 49152);
-        in = new BufferedReader(new InputStreamReader(
-                socket.getInputStream()));
-        out = new PrintWriter(socket.getOutputStream(), true);
+
+        out = new ObjectOutputStream(socket.getOutputStream());
+        out.flush();
+        in = new ObjectInputStream(socket.getInputStream());
 
         String userName = null;
         String[] names = null;
 
         // Process all messages from server, according to the protocol.
         while (true) {
-            String line = in.readLine();
-            if (line.startsWith("GET_NAME")) {
-                userName = getUserName();
-                out.println(userName);
-            } else if (line.startsWith("NAME_OK")) {
-                onlineListModel.addElement(userName);
-                clientName = userName;
-                out.println("GET_CHATROOMS");
-            } else if (line.startsWith("MESSAGE")) {
-                messageArea.append(line.substring(8) + "\n");
-            } else if (line.startsWith("TO_GC")){
-                String[] message = line.trim().split("\\s+");
-                String toSend = "";
+            String line = "";
+            Object linez;
+            try {
+                linez = in.readObject();
+                if (linez instanceof String){
+                    line = (String) linez;
 
-                if (groupChatWindows == null) {
-                    groupChatWindows = new ArrayList<>();
-                    groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel));
+                    if (line.startsWith("GET_NAME")) {
+                        userName = getUserName();
+                        out.writeObject(userName);
+                        out.flush();
+                    } else if (line.startsWith("NAME_OK")) {
+                        onlineListModel.addElement(userName);
+                        clientName = userName;
+                        out.writeObject("GET_CHATROOMS");
+                        out.flush();
+                    } else if (line.startsWith("MESSAGE")) {
+                        messageArea.append(line.substring(8) + "\n");
+                        out.writeObject("GET_NAME_CLIENTS");
+                        out.flush();
+                    } else if (line.startsWith("TO_GC")){
+                        String[] message = line.trim().split("\\s+");
+                        String toSend = "";
 
-                    for (int i = 2; i < message.length; i++)
-                        groupChatWindows.get(groupChatWindows.size()-1).getUserListModel().addElement(message[i]);
-                }
-            } else if (line.startsWith("SEND_GC")){
-                String[] message = line.trim().split("\\s+");
+                        if (groupChatWindows == null) {
+                            groupChatWindows = new ArrayList<>();
+                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel));
 
-                String toSend = "";
-
-                for (int i = 2; i < message.length; i++)
-                    toSend += message[i] + " ";
-
-                if (groupChatWindows != null) {
-                    for (GroupChat c : groupChatWindows)
-                        if (c.getID().equalsIgnoreCase(message[1])) {
-                            c.appendMessage(toSend);
-                            out.println("GET_NAMES_IN_GC " + message[1]);
-                            break;
+                            for (int i = 2; i < message.length; i++)
+                                groupChatWindows.get(groupChatWindows.size()-1).getUserListModel().addElement(message[i]);
                         }
-                } else {
-                    groupChatWindows = new ArrayList<>();
-                    groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel));
-                    groupChatWindows.get(groupChatWindows.size()-1).appendMessage(toSend);
-                }
-            } else if (line.startsWith("CR_MESSAGE")) {
-                String[] message = line.trim().split("\\s+");
-                String toSend = "";
+                    } else if (line.startsWith("SEND_GC")){
+                        String[] message = line.trim().split("\\s+");
 
+                        String toSend = "";
 
-                for (int i = 2; i < message.length; i++)
-                    toSend += message[i] + " ";
+                        for (int i = 2; i < message.length; i++)
+                            toSend += message[i] + " ";
 
-                if (openedChatrooms == null) {
-                    openedChatrooms = new ArrayList<>();
-                    openedChatrooms.add(new Chatroom(message[1], out, userName));
-                    openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
-                } else {
-                    for (Chatroom c : openedChatrooms) {
-                        if (c.getChatroomName().equalsIgnoreCase(message[1]))
-                            c.appendMessage(toSend);
-                    }
-                }
-
-                out.println("GET_CHATROOMS");
-
-            } else if (line.startsWith("JOIN_CR_MESSAGE")) {
-                String[] message = line.trim().split("\\s+");
-
-                String toSend = "";
-
-                for (int i = 2; i < message.length; i++)
-                    toSend += message[i] + " ";
-
-
-                if (openedChatrooms == null) {
-                    openedChatrooms = new ArrayList<>();
-                    openedChatrooms.add(new Chatroom(message[1], out, userName));
-                    openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
-                } else {
-                    for (Chatroom c : openedChatrooms) {
-                        if (c.getChatroomName().equalsIgnoreCase(message[1]))
-                            c.appendMessage(toSend);
-                    }
-                }
-            } else if (line.startsWith("NAMES_IN_GC")) {
-                String[] message = line.trim().split("\\s+");
-
-                if (groupChatWindows != null) {
-                    for (GroupChat g: groupChatWindows)
-                        if (message[1].equalsIgnoreCase(g.getID())) {
-                            for (int i = 2; i < message.length; i++) {
-                                int j = 0;
-                                boolean noDuplicate = true;
-                                while (j < g.getUserListModel().getSize() && noDuplicate){
-                                    if (g.getUserListModel().get(j).toString().equals(message[i]))
-                                        noDuplicate = false;
-                                    else j++;
+                        if (groupChatWindows != null) {
+                            for (GroupChat c : groupChatWindows)
+                                if (c.getID().equalsIgnoreCase(message[1])) {
+                                    c.appendMessage(toSend);
+                                    out.writeObject("GET_NAMES_IN_GC " + message[1]);
+                                    out.flush();
+                                    break;
                                 }
-                                if (noDuplicate)
-                                    g.getUserListModel().addElement(message[i]);
+                        } else {
+                            groupChatWindows = new ArrayList<>();
+                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel));
+                            groupChatWindows.get(groupChatWindows.size()-1).appendMessage(toSend);
+                        }
+                    } else if (line.startsWith("CR_MESSAGE")) {
+                        String[] message = line.trim().split("\\s+");
+                        String toSend = "";
+
+
+                        for (int i = 2; i < message.length; i++)
+                            toSend += message[i] + " ";
+
+                        if (openedChatrooms == null) {
+                            openedChatrooms = new ArrayList<>();
+                            openedChatrooms.add(new Chatroom(message[1], out, userName));
+                            openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
+                        } else {
+                            for (Chatroom c : openedChatrooms) {
+                                if (c.getChatroomName().equalsIgnoreCase(message[1]))
+                                    c.appendMessage(toSend);
                             }
-                            break;
-                        }
-                }
-            }
-
-
-            if (line.startsWith("DISCONNECT")){
-                String[] temp = line.trim().split("\\s+");
-                System.out.println("dc " + temp[1]);
-
-                System.out.println("This statement is executed");
-
-                for (int j = 0; j < onlineListModel.getSize(); j++){
-                    System.out.println(onlineListModel.get(j));
-                    String compare = (String) onlineListModel.get(j);
-
-                    if (compare.equalsIgnoreCase(temp[1]))
-                        onlineListModel.removeElementAt(j);
-                }
-            }
-
-            // Start of something
-            if (line.startsWith("NAME_CLIENTS")) {
-                String[] temp = line.split("\\s+");
-
-                for (int i = 1; i < temp.length; i++) {
-                    boolean isToAdd = true;
-                    for (int j = 0; j < onlineListModel.getSize(); j++) {
-                        String compare = (String)onlineListModel.get(j);
-
-                        if (compare.equalsIgnoreCase(temp[i])) {
-                            isToAdd = false;
-                            break;
                         }
 
-                    }
+                        out.writeObject("GET_CHATROOMS");
+                        out.flush();
 
-                    if (isToAdd) {
-                        onlineListModel.addElement(temp[i]);
-                    }
-                }
-            }
+                    } else if (line.startsWith("JOIN_CR_MESSAGE")) {
+                        String[] message = line.trim().split("\\s+");
 
-            if (line.startsWith("CHATROOMS")) {
-                String[] temp = line.split("\\s+");
+                        String toSend = "";
 
-                for (int i = 1; i < temp.length; i++) {
-                    boolean isToAdd = true;
-                    for (int j = 0; j < chatroomListModel.getSize(); j++) {
-                        String compare = (String) chatroomListModel.get(j);
+                        for (int i = 2; i < message.length; i++)
+                            toSend += message[i] + " ";
 
-                        if (compare.equalsIgnoreCase(temp[i])) {
-                            isToAdd = false;
-                            break;
+
+                        if (openedChatrooms == null) {
+                            openedChatrooms = new ArrayList<>();
+                            openedChatrooms.add(new Chatroom(message[1], out, userName));
+                            openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
+                        } else {
+                            for (Chatroom c : openedChatrooms) {
+                                if (c.getChatroomName().equalsIgnoreCase(message[1]))
+                                    c.appendMessage(toSend);
+                            }
                         }
+                    } else if (line.startsWith("NAMES_IN_GC")) {
+                        String[] message = line.trim().split("\\s+");
 
+                        if (groupChatWindows != null) {
+                            for (GroupChat g: groupChatWindows)
+                                if (message[1].equalsIgnoreCase(g.getID())) {
+                                    for (int i = 2; i < message.length; i++) {
+                                        int j = 0;
+                                        boolean noDuplicate = true;
+                                        while (j < g.getUserListModel().getSize() && noDuplicate){
+                                            if (g.getUserListModel().get(j).toString().equals(message[i]))
+                                                noDuplicate = false;
+                                            else j++;
+                                        }
+                                        if (noDuplicate)
+                                            g.getUserListModel().addElement(message[i]);
+                                    }
+                                    break;
+                                }
+                        }
                     }
 
-                    if (isToAdd) {
-                        chatroomListModel.addElement(temp[i]);
+                    if (line.startsWith("DISCONNECT")){
+                        String[] temp = line.trim().split("\\s+");
+                        System.out.println("dc " + temp[1]);
+
+                        for (int j = 0; j < onlineListModel.getSize(); j++){
+                            System.out.println(onlineListModel.get(j));
+                            String compare = (String) onlineListModel.get(j);
+
+                            if (compare.equalsIgnoreCase(temp[1]))
+                                onlineListModel.removeElementAt(j);
+                        }
                     }
+
+                    // Start of something
+                    if (line.startsWith("NAME_CLIENTS")) {
+                        String[] temp = line.split("\\s+");
+
+                        for (int i = 1; i < temp.length; i++) {
+                            boolean isToAdd = true;
+                            for (int j = 0; j < onlineListModel.getSize(); j++) {
+                                String compare = (String)onlineListModel.get(j);
+
+                                if (compare.equalsIgnoreCase(temp[i])) {
+                                    isToAdd = false;
+                                    break;
+                                }
+
+                            }
+
+                            if (isToAdd) {
+                                onlineListModel.addElement(temp[i]);
+                            }
+                        }
+                    }
+
+                    if (line.startsWith("CHATROOMS")) {
+                        String[] temp = line.split("\\s+");
+
+                        for (int i = 1; i < temp.length; i++) {
+                            boolean isToAdd = true;
+                            for (int j = 0; j < chatroomListModel.getSize(); j++) {
+                                String compare = (String) chatroomListModel.get(j);
+
+                                if (compare.equalsIgnoreCase(temp[i])) {
+                                    isToAdd = false;
+                                    break;
+                                }
+
+                            }
+
+                            if (isToAdd) {
+                                chatroomListModel.addElement(temp[i]);
+                            }
+                        }
+                    }
+
+                    //exceptions occur if this is included since the outputstream was already flushed.
+            /*out.writeUTF("GET_NAME_CLIENTS");
+            out.flush();*/
+
                 }
-            }
+                else{
 
-            out.println("GET_NAME_CLIENTS");
+                }
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
         }
     }
 }
