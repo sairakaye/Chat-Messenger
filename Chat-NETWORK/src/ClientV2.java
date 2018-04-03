@@ -28,6 +28,7 @@ public class ClientV2 extends JFrame {
     ObjectOutputStream out;
     private ArrayList<Chatroom> openedChatrooms;
     private ArrayList<GroupChat> groupChatWindows;
+    private ArrayList<PrivateChat> privateChatWindows;
 
     //add here windows for private message;
     private String clientName;
@@ -108,6 +109,19 @@ public class ClientV2 extends JFrame {
         btnPrivateMessage = new JButton("Private Message");
         btnPrivateMessage.setBounds(452, 398, 133, 41);
         contentPane.add(btnPrivateMessage);
+        btnPrivateMessage.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                if (privateChatWindows == null) {
+                    privateChatWindows = new ArrayList<>();
+                    privateChatWindows.add(new PrivateChat((String)listOnline.getSelectedValue(), out, clientName));
+                } else {
+                    for (PrivateChat p : privateChatWindows) {
+                        if (p.getToPMUser().equalsIgnoreCase((String)listOnline.getSelectedValue()))
+                            p.setVisible(true);
+                    }
+                }
+            }
+        });
 
         btnFileTransfer = new JButton("Send File");
         btnFileTransfer.addActionListener(new ActionListener() {
@@ -193,7 +207,9 @@ public class ClientV2 extends JFrame {
     private synchronized void run() throws IOException {
 
         // Make connection and initialize streams
-        String serverAddress = "127.0.0.1";
+
+        // Change the server address to the server's IP address if ever.
+        String serverAddress = "localhost";
         Socket socket = new Socket(serverAddress, 49152);
 
         out = new ObjectOutputStream(socket.getOutputStream());
@@ -209,7 +225,7 @@ public class ClientV2 extends JFrame {
             Object linez;
             try {
                 linez = in.readObject();
-                if (linez instanceof String){
+                if (linez instanceof String) {
                     line = (String) linez;
 
                     if (line.startsWith("GET_NAME")) {
@@ -225,6 +241,23 @@ public class ClientV2 extends JFrame {
                         messageArea.append(line.substring(8) + "\n");
                         out.writeObject("GET_NAME_CLIENTS");
                         out.flush();
+                    } else if (line.startsWith("SEND_PM")) {
+                        String[] message = line.trim().split("\\s+");
+                        String toSend = "";
+
+                        for (int i = 3; i < message.length; i++)
+                            toSend += message[i] + " ";
+
+                        if (privateChatWindows == null) {
+                            privateChatWindows = new ArrayList<>();
+                            privateChatWindows.add(new PrivateChat(message[1], out, userName));
+                            privateChatWindows.get(privateChatWindows.size()-1).appendMessage(toSend);
+                        } else {
+                            for (PrivateChat p : privateChatWindows) {
+                                if (p.getToPMUser().equalsIgnoreCase(message[1]))
+                                    p.appendMessage(toSend);
+                            }
+                        }
                     } else if (line.startsWith("TO_GC")){
                         String[] message = line.trim().split("\\s+");
                         String toSend = "";

@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -18,7 +19,10 @@ public class Server {
 
     public static void main(String[] args) throws Exception {
         System.out.println("The chat server is running.");
-        ServerSocket listener = new ServerSocket(PORT);
+
+        //Change the localhost into an IP address of your computer in the network if it will be the server.
+        InetAddress addr = InetAddress.getByName("localhost");
+        ServerSocket listener = new ServerSocket(PORT, 50, addr);
 
         try {
             while (true) {
@@ -95,26 +99,23 @@ public class Server {
                             }
 
                             if (input.startsWith("PRIVATE_MESSAGE")) {
-                                String[] messages = input.split(" ");
+                                String[] messages = input.split("\\s+");
 
                                 // Inefficient solution
                                 String message = "";
-                                for (int i = 2; i < messages.length; i++) {
+                                for (int i = 3; i < messages.length; i++) {
                                     message += messages[i] + " ";
                                 }
 
-
                                 for (ClientInfo client : clients) {
                                     if (client.getName().equalsIgnoreCase(messages[1])) {
-                                        client.getWriter().writeObject("MESSAGE " + name + " [Private Message]: " + message);
-                                        client.getWriter().flush();
+                                        client.getWriter().writeObject("SEND_PM " + messages[2] + " " + client.getName() + " " + name + ": " + message);
                                         break;
                                     }
                                 }
 
-                                out.writeObject("MESSAGE " + name + " [Private Message]: " + message);
+                                out.writeObject("SEND_PM " + messages[1] + " " + messages[2] + " " + name + ": " + message);
                                 out.flush();
-
                             } else if (input.startsWith("GET_NAME_CLIENTS")) {
                                 toSend = "";
 
