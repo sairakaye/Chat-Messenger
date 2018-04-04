@@ -133,8 +133,12 @@ public class Server {
 
                                 System.out.println(toSend);
 
-                                out.writeObject("CHATROOMS " + toSend);
-                                out.flush();
+                                for (ClientInfo user : clients) {
+                                    user.getWriter().writeObject("CHATROOMS " + toSend);
+                                    user.getWriter().flush();
+                                }
+                                /*out.writeObject("CHATROOMS " + toSend);
+                                out.flush();*/
                             } else if (input.startsWith("CREATE_GC")) {
                                 String[] message = input.trim().split("\\s+");
                                 ArrayList<ClientInfo> clientsList = new ArrayList<ClientInfo>();
@@ -207,6 +211,18 @@ public class Server {
                                     names += c.getName() + " ";
 
                                 out.writeObject("NAMES_IN_GC " + message[1] + " " + names);
+                                out.flush();
+                                System.out.println(names);
+                            } else if (input.startsWith("GET_NAMES_IN_CR")){
+                                String[] message = input.trim().split("\\s+");
+                                String key = message[1];
+                                ArrayList<ClientInfo> chatroomUsers = chatrooms.get(key);
+                                String names = "";
+
+                                for (ClientInfo c : chatroomUsers)
+                                    names += c.getName() + " ";
+
+                                out.writeObject("NAMES_IN_CR " + message[1] + " " + names);
                                 out.flush();
                                 System.out.println(names);
                             } else if (input.startsWith("CREATE_CHATROOM")) {

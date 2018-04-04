@@ -320,6 +320,8 @@ public class ClientV2 extends JFrame {
                             for (Chatroom c : openedChatrooms) {
                                 if (c.getChatroomName().equalsIgnoreCase(message[1]))
                                     c.appendMessage(toSend);
+                                out.writeObject("GET_NAMES_IN_CR " + message[1]);
+                                out.flush();
                             }
                         }
 
@@ -341,8 +343,11 @@ public class ClientV2 extends JFrame {
                             openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
                         } else {
                             for (Chatroom c : openedChatrooms) {
-                                if (c.getChatroomName().equalsIgnoreCase(message[1]))
+                                if (c.getChatroomName().equalsIgnoreCase(message[1])) {
                                     c.appendMessage(toSend);
+                                    out.writeObject("GET_NAMES_IN_CR " + message[1]);
+                                    out.flush();
+                                }
                             }
                         }
                     } else if (line.startsWith("NAMES_IN_GC")) {
@@ -361,6 +366,27 @@ public class ClientV2 extends JFrame {
                                         }
                                         if (noDuplicate)
                                             g.getUserListModel().addElement(message[i]);
+                                    }
+                                    break;
+                                }
+                        }
+                    } else if (line.startsWith("NAMES_IN_CR")){
+                        String[] message = line.trim().split("\\s+");
+
+                        if (openedChatrooms != null){
+                            for (Chatroom c : openedChatrooms)
+                                if(message[1].equalsIgnoreCase(c.getChatroomName())) {
+                                    for (int i = 2; i < message.length; i++){
+                                        int j = 0;
+                                        boolean noDuplicate = true;
+
+                                        while (j < c.getUserListModel().getSize() && noDuplicate){
+                                            if (c.getUserListModel().get(j).toString().equals(message[i]))
+                                                noDuplicate = false;
+                                            else j++;
+                                        }
+                                        if (noDuplicate)
+                                            c.getUserListModel().addElement(message[i]);
                                     }
                                     break;
                                 }
