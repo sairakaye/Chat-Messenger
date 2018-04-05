@@ -23,6 +23,7 @@ public class ClientV2 extends JFrame {
     private JButton btnFileTransfer;
     private JButton btnJoinChatroom;
     private JButton btnCreateChatroom;
+    private JButton btnDownload;
     private JList listChatroom;
     private JList listFiles;
 
@@ -104,17 +105,17 @@ public class ClientV2 extends JFrame {
         filesListModel = new DefaultListModel();
 
         listOnline = new JList(onlineListModel);
-        listOnline.setBounds(452, 40, 133, 248);
+        listOnline.setBounds(452, 40, 133, 240);
         contentPane.add(listOnline);
 
         listOnline.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         listFiles = new JList(filesListModel);
-        listFiles.setBounds(597, 319, 179, 90);
+        listFiles.setBounds(597, 255, 179, 100);
         contentPane.add(listFiles);
         
         btnPrivateMessage = new JButton("Private Message");
-        btnPrivateMessage.setBounds(452, 398, 133, 41);
+        btnPrivateMessage.setBounds(454, 396, 133, 41);
         contentPane.add(btnPrivateMessage);
         btnPrivateMessage.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
@@ -136,7 +137,7 @@ public class ClientV2 extends JFrame {
 
         	}
         });
-        btnFileTransfer.setBounds(452, 299, 133, 36);
+        btnFileTransfer.setBounds(452, 293, 133, 36);
         contentPane.add(btnFileTransfer);
 
         btnJoinChatroom = new JButton("Join Chatroom");
@@ -161,7 +162,7 @@ public class ClientV2 extends JFrame {
         contentPane.add(btnCreateChatroom);
 
         listChatroom = new JList(chatroomListModel);
-        listChatroom.setBounds(595, 40, 179, 248);
+        listChatroom.setBounds(595, 40, 179, 191);
         contentPane.add(listChatroom);
         
         JLabel lblOnlineUsers = new JLabel("Online Users");
@@ -199,14 +200,18 @@ public class ClientV2 extends JFrame {
                 }
         	}
         });
-        btnGroupChat.setBounds(452, 346, 133, 41);
+        btnGroupChat.setBounds(454, 342, 133, 41);
         contentPane.add(btnGroupChat);
         
         JLabel lblFiles = new JLabel("Files");
         lblFiles.setHorizontalAlignment(SwingConstants.CENTER);
         lblFiles.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        lblFiles.setBounds(597, 299, 179, 18);
+        lblFiles.setBounds(597, 236, 179, 18);
         contentPane.add(lblFiles);
+        
+        btnDownload = new JButton("Download File");
+        btnDownload.setBounds(597, 368, 179, 41);
+        contentPane.add(btnDownload);
         
     }
 
