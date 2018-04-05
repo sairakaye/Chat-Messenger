@@ -1,12 +1,13 @@
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.Font;
 import java.util.List;
 
 public class ClientV2 extends JFrame {
@@ -134,7 +135,27 @@ public class ClientV2 extends JFrame {
         btnFileTransfer = new JButton("Send File");
         btnFileTransfer.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent arg0) {
+        	    FileDialog dialog = new FileDialog((Frame) null, "Select file to Open");
+        	    dialog.setVisible(true);
 
+        	    File[] files = dialog.getFiles();
+
+        	    File file = files[0];
+
+        	    try {
+        	        if(file.exists()) {
+        	            byte[] content = Files.readAllBytes(file.toPath());
+        	            String temp = file.getName();
+        	            String[] name = temp.split("\\.");
+        	            FileToTransfer ftf = new FileToTransfer(content, name[0], name[1]);
+
+        	            out.writeObject(ftf);
+        	            out.flush();
+                    }
+
+                } catch(IOException e) {
+        	        e.printStackTrace();
+                }
         	}
         });
         btnFileTransfer.setBounds(452, 293, 133, 36);
@@ -212,6 +233,20 @@ public class ClientV2 extends JFrame {
         btnDownload = new JButton("Download File");
         btnDownload.setBounds(597, 368, 179, 41);
         contentPane.add(btnDownload);
+        btnDownload.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String name = (String)listFiles.getSelectedValue();
+                String[] temp = name.split("\\.");
+
+                try {
+                    out.writeObject("DOWNLOAD_FILE " + temp[0]);
+                    out.flush();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
         
     }
 
@@ -396,6 +431,10 @@ public class ClientV2 extends JFrame {
                                     break;
                                 }
                         }
+                    } else if (line.startsWith("UPLOAD_FILE")) {
+                        String[] message = line.trim().split("\\s+");
+
+                        filesListModel.addElement(message[1]);
                     }
 
                     if (line.startsWith("DISCONNECT")){

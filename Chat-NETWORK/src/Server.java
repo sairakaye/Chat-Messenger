@@ -1,4 +1,5 @@
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,6 +16,7 @@ public class Server {
     private static HashMap<String, ArrayList<ClientInfo>> groupChats = new HashMap<>();
     private static HashMap<String, ArrayList<ClientInfo>> chatrooms = new HashMap<>();
     private static HashMap<String, String> chatroomPasswords = new HashMap<>();
+    private static ArrayList<FileToTransfer> files = new ArrayList<>();
     private static int groupChatID = 0;
 
     public static void main(String[] args) throws Exception {
@@ -286,6 +288,25 @@ public class Server {
                                         client.getWriter().flush();
                                     }
                                 }
+                            } else if (input.startsWith("DOWNLOAD_FILE")) {
+                                String[] messages = input.trim().split("\\s+");
+                                String target = messages[1];
+
+                                FileToTransfer targetFile = null;
+
+                                for(FileToTransfer file : files)
+                                    if(target.equals(file.getName()))
+                                        targetFile = file;
+
+                                // change this to absolute
+                                String path = "D:\\GitHub\\Milestone2\\Chat-NETWORK\\files\\"
+                                        + targetFile.getName() + targetFile.getExtension();
+
+                                try (FileOutputStream fos = new FileOutputStream(path)) {
+                                    fos.write(targetFile.getContent());
+                                    System.out.println("File sent!");
+                                }
+
                             } else {
                                 for (ClientInfo client : clients) {
                                     client.getWriter().writeObject("MESSAGE " + name + ": " + input);
@@ -293,7 +314,15 @@ public class Server {
                                 }
                             }
                         }
-                        else{
+                        else {
+                            FileToTransfer file = (FileToTransfer) inz;
+
+                            files.add(file);
+
+                            for(ClientInfo client : clients) {
+                                client.getWriter().writeObject("UPLOAD_FILE " + file.getName() + file.getExtension());
+                                client.getWriter().flush();
+                            }
 
                         }
                     }catch(ClassNotFoundException ex){
