@@ -299,8 +299,9 @@ public class Server {
                                         targetFile = file;
 
                                 // change this to absolute
-                                String path = "D:\\GitHub\\Milestone2\\Chat-NETWORK\\files\\"
-                                        + targetFile.getName() + targetFile.getExtension();
+                                String path = System.getProperty("user.dir") + "\\" +
+                                         targetFile.getName() + targetFile.getExtension();
+                                System.out.println(path);
 
                                 try (FileOutputStream fos = new FileOutputStream(path)) {
                                     fos.write(targetFile.getContent());
