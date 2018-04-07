@@ -30,23 +30,15 @@ public class ServerV2 extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField txtLocalhost;
-	private static JTextArea serverLog;
-	private static boolean stopped;
+	private JTextArea serverLog;
+	private Server serverLogic;
 
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-//		EventQueue.invokeLater(new Runnable() {
-//			public void run() {
-//				try {
-					ServerV2 frame = new ServerV2();
-					frame.setVisible(true);
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		});
+	    ServerV2 frame = new ServerV2();
+		frame.setVisible(true);
 	}
 
 	/**
@@ -57,7 +49,6 @@ public class ServerV2 extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 775);
 
-		stopped = true;
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.WHITE);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -91,14 +82,13 @@ public class ServerV2 extends JFrame {
 		txtLocalhost.setBounds(10, 239, 414, 29);
 		contentPane.add(txtLocalhost);
 		txtLocalhost.setColumns(10);
-		
+
+		serverLogic = new Server(txtLocalhost.getText(), serverLog);
+
 		JButton btnRun = new JButton("Run Server");
 		btnRun.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    stopped = false;
-				serverLog.append("The server is running\n");
-				btnRun.setEnabled(false);
-
+			    serverLogic.startServer();
 			}
 		});
 		btnRun.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
@@ -106,7 +96,7 @@ public class ServerV2 extends JFrame {
 		btnRun.setForeground(new Color(255, 255, 255));
 		btnRun.setBounds(10, 279, 189, 29);
 		contentPane.add(btnRun);
-		
+
 		JLabel lblServerIpAddress = new JLabel("Server IP Address:");
 		lblServerIpAddress.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
 		lblServerIpAddress.setBounds(161, 211, 118, 29);
@@ -122,13 +112,7 @@ public class ServerV2 extends JFrame {
 		JButton btnStop = new JButton("Stop Server");
 		btnStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    if (!stopped) {
-                    stopped = true;
-                    serverLog.append("Server is stopped\n");
-                    btnRun.setEnabled(true);
-                }
-                else
-                    serverLog.append("Server is already stopped!\n");
+			    serverLogic.stopServer();
 			}
 		});
 		btnStop.setForeground(Color.WHITE);
@@ -137,5 +121,4 @@ public class ServerV2 extends JFrame {
 		btnStop.setBounds(235, 279, 189, 29);
 		contentPane.add(btnStop);
 	}
-
 }

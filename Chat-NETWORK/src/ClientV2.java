@@ -558,12 +558,10 @@ public class ClientV2 extends JFrame {
                         }
                     }
 
-                    //exceptions occur if this is included since the outputstream was already flushed.
-            /*out.writeUTF("GET_NAME_CLIENTS");
-            out.flush();*/
                 }
             }catch(Exception ex){
-                ex.printStackTrace();
+                //ex.printStackTrace();
+                System.exit(1);
             }
         }
     }

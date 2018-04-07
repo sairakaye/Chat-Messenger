@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.net.InetAddress;
@@ -18,21 +19,67 @@ public class Server {
     private static HashMap<String, String> chatroomPasswords = new HashMap<>();
     private static ArrayList<FileToTransfer> files = new ArrayList<>();
     private static int groupChatID = 0;
+    private ServerSocket listener;
+    private static boolean running;
+    private String nameServer;
+    private static JTextArea serverLog;
 
-    public static void main(String[] args) throws Exception {
-        System.out.println("The chat server is running.");
+    public Server(String name, JTextArea serverLog){
+        nameServer = name;
+        this.serverLog = serverLog;
+    }
 
-        //Change the localhost into an IP address of your computer in the network if it will be the server.
-        InetAddress addr = InetAddress.getByName("localhost");
-        ServerSocket listener = new ServerSocket(PORT, 50, addr);
+//    public static void main(String[] args) throws Exception {
+//        System.out.println("The chat server is running.");
+//
+//        //Change the localhost into an IP address of your computer in the network if it will be the server.
+//        InetAddress addr = InetAddress.getByName("localhost");
+//        ServerSocket listener = new ServerSocket(PORT, 50, addr);
+//
+//        try {
+//            while (true) {
+//                new Handler(listener.accept()).start();
+//            }
+//        } finally {
+//            listener.close();
+//        }
+//    }
 
+    public void startServer(){
         try {
-            while (true) {
-                new Handler(listener.accept()).start();
-            }
-        } finally {
-            listener.close();
+            InetAddress addr = InetAddress.getByName(nameServer);
+            listener = new ServerSocket(PORT, 50, addr);
+        }catch (Exception e){
+            e.printStackTrace();
+            return;
         }
+        running = true;
+        serverLog.append("The server is running\n");
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (running){
+                    try {
+                        Socket client = listener.accept();
+                        new Handler(client).start();
+                    }catch(Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    public void stopServer(){
+        running = false;
+        serverLog.append("The server is stopped\n");
+        try {
+            listener.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        System.exit(1);
     }
 
     private static class Handler extends Thread {
@@ -52,7 +99,7 @@ public class Server {
                 out.flush();
                 in = new ObjectInputStream(socket.getInputStream());
 
-                while (true) {
+                while (running) {
                     out.writeObject("GET_NAME");
                     out.flush();
 
@@ -91,7 +138,7 @@ public class Server {
                 user = new ClientInfo(name, out);
                 clients.add(user);
 
-                while (true) {
+                while (running) {
                     String input = "";
                     Object inz;
                     try {
@@ -333,11 +380,11 @@ public class Server {
                     }
                 }
             } catch (IOException e) {
-                System.out.println(e);
+                serverLog.append(e.getMessage() + "\n");
             } finally {
                 if (name != null) {
                     names.remove(name);
-                    System.out.println(name + " is disconnected from the server.");
+                    serverLog.append(name + " is disconnected from the server.\n");
 
                     if (out != null) {
                         clients.remove(user);
