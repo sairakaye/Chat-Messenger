@@ -15,26 +15,38 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class ServerV2 extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField txtLocalhost;
+	private static JTextArea serverLog;
+	private static boolean stopped;
 
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
+//		EventQueue.invokeLater(new Runnable() {
+//			public void run() {
+//				try {
 					ServerV2 frame = new ServerV2();
 					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		});
 	}
 
 	/**
@@ -44,22 +56,24 @@ public class ServerV2 extends JFrame {
 		this.setTitle("The BuzzRoom's Server");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 775);
+
+		stopped = true;
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.WHITE);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JTextArea textArea = new JTextArea();
-		textArea.setFont(new Font("Calibri", Font.PLAIN, 12));
-		textArea.setBounds(10, 207, 414, 318);
+		serverLog = new JTextArea();
+		serverLog.setFont(new Font("Calibri", Font.PLAIN, 12));
+		serverLog.setBounds(10, 207, 414, 318);
 		
-		JScrollPane scrollPane = new JScrollPane(textArea);
+		JScrollPane scrollPane = new JScrollPane(serverLog);
 		scrollPane.setBounds(10, 352, 414, 373);
 		contentPane.add(scrollPane);
 		
-		JLabel serverLogoLbl = new JLabel("New label");
-		serverLogoLbl.setIcon(new ImageIcon("D:\\School Stuff\\Milestone2\\Chat-NETWORK\\img\\LogoServer.png"));
+		JLabel serverLogoLbl = new JLabel("Server logo");
+		serverLogoLbl.setIcon(new ImageIcon("img\\LogoServer.png"));
 		serverLogoLbl.setBounds(140, 54, 150, 150);
 		contentPane.add(serverLogoLbl);
 		
@@ -81,6 +95,10 @@ public class ServerV2 extends JFrame {
 		JButton btnRun = new JButton("Run Server");
 		btnRun.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+			    stopped = false;
+				serverLog.append("The server is running\n");
+				btnRun.setEnabled(false);
+
 			}
 		});
 		btnRun.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
@@ -104,6 +122,13 @@ public class ServerV2 extends JFrame {
 		JButton btnStop = new JButton("Stop Server");
 		btnStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+			    if (!stopped) {
+                    stopped = true;
+                    serverLog.append("Server is stopped\n");
+                    btnRun.setEnabled(true);
+                }
+                else
+                    serverLog.append("Server is already stopped!\n");
 			}
 		});
 		btnStop.setForeground(Color.WHITE);
@@ -112,4 +137,5 @@ public class ServerV2 extends JFrame {
 		btnStop.setBounds(235, 279, 189, 29);
 		contentPane.add(btnStop);
 	}
+
 }

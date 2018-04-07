@@ -43,8 +43,8 @@ public class LoginDialog extends JDialog {
 		this.out = out;
 		this.isToShowUnavailable = isToShowUnavailable;
 		this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		this.setVisible(true);
 		this.setTitle("Halika, mag-login ka!");
+
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBackground(Color.WHITE);
@@ -114,6 +114,7 @@ public class LoginDialog extends JDialog {
 		contentPanel.add(unavailableNameLabel);
 
 		unavailableNameLabel.setVisible(isToShowUnavailable);
+		this.setVisible(true);
 	}
 
 	public String getUserName() {

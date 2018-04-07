@@ -339,11 +339,15 @@ public class Server {
                     names.remove(name);
                     System.out.println(name + " is disconnected from the server.");
 
+                    if (out != null) {
+                        clients.remove(user);
+                    }
+
                     for (ClientInfo client : clients) {
                         if (clients.size() > 1) {
                             try {
                                 client.getWriter().writeObject("MESSAGE " + name + " has disconnected.");
-//                              client.getWriter().flush();
+                                client.getWriter().flush();
                             } catch (Exception ex) {
                                 ex.printStackTrace();
                             }
@@ -353,15 +357,13 @@ public class Server {
                     for (ClientInfo client : clients){
                         try {
                             client.getWriter().writeObject("DISCONNECT " + name);
-//                            client.getWriter().flush();
+                            client.getWriter().flush();
                         }catch(Exception ex){
                             ex.printStackTrace();
                         }
                     }
                 }
-                if (out != null) {
-                    clients.remove(user);
-                }
+
                 try {
                     out.close();
                     in.close();
