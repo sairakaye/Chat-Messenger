@@ -5,6 +5,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.Font;
+import java.awt.Color;
+import java.util.ArrayList;
 
 public class GroupChat extends JFrame {
 
@@ -21,6 +24,11 @@ public class GroupChat extends JFrame {
 	private ObjectOutputStream out;
 	private String user;
 	private String groupChatID;
+	private JScrollPane usersScrollPane;
+	private JScrollPane messageScrollPane;
+
+	private ArrayList<GroupChat> openedGroupChat;
+
 
 	/*
 	public static void main(String[] args) {
@@ -37,24 +45,37 @@ public class GroupChat extends JFrame {
 	}
 	*/
 
-	public GroupChat(String groupChatID, ObjectOutputStream out, String user, DefaultListModel onlineListModel) {
+	public GroupChat(String groupChatID, ObjectOutputStream out, String user, DefaultListModel onlineListModel, ArrayList<GroupChat> openedGroupChat) {
 		this.setTitle("Group Chat - ID #" + groupChatID);
 		this.out = out;
 		this.user = user;
 		this.groupChatID = groupChatID;
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		this.addWindowListener(new java.awt.event.WindowAdapter() {
+			@Override
+			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				openedGroupChat.remove(this);
+				GroupChat.super.dispose();
+			}
+		});
 		setBounds(100, 100, 600, 500);
 		contentPane = new JPanel();
+		contentPane.setBackground(new Color(255, 255, 255));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
 		groupMessageArea = new JTextArea();
+		groupMessageArea.setFont(new Font("Calibri", Font.PLAIN, 14));
 		groupMessageArea.setBounds(10, 11, 409, 401);
-		contentPane.add(groupMessageArea);
 		groupMessageArea.setEditable(false);
 		
+		messageScrollPane = new JScrollPane(groupMessageArea);
+		messageScrollPane.setBounds(10, 11, 409, 401);
+		contentPane.add(messageScrollPane);
+		
 		messageField = new JTextField();
+		messageField.setFont(new Font("Calibri", Font.PLAIN, 14));
 		messageField.setBounds(10, 423, 409, 27);
 		contentPane.add(messageField);
 
@@ -72,12 +93,11 @@ public class GroupChat extends JFrame {
 
 		listUsersModel = new DefaultListModel();
 		messageField.setColumns(10);
-
-		listUsers = new JList(listUsersModel);
-		listUsers.setBounds(429, 36, 145, 244);
-		contentPane.add(listUsers);
 		
 		btnSend = new JButton("Send");
+		btnSend.setFont(new Font("Trebuchet MS", Font.PLAIN, 12));
+		btnSend.setForeground(new Color(255, 255, 255));
+		btnSend.setBackground(new Color(0, 0, 139));
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -93,6 +113,9 @@ public class GroupChat extends JFrame {
 		contentPane.add(btnSend);
 		
 		btnFileTransfer = new JButton("Send File");
+		btnFileTransfer.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
+		btnFileTransfer.setForeground(new Color(255, 255, 255));
+		btnFileTransfer.setBackground(new Color(0, 0, 128));
 		btnFileTransfer.setBounds(429, 291, 145, 37);
 		btnFileTransfer.addActionListener(new ActionListener() {
             @Override
@@ -102,12 +125,16 @@ public class GroupChat extends JFrame {
         });
 		contentPane.add(btnFileTransfer);
 		
-		lblUsersInGroup = new JLabel("Users in Group Chat");
+		lblUsersInGroup = new JLabel("Group Chat Users");
+		lblUsersInGroup.setFont(new Font("Trebuchet MS", Font.BOLD, 14));
 		lblUsersInGroup.setHorizontalAlignment(SwingConstants.CENTER);
 		lblUsersInGroup.setBounds(429, 11, 145, 14);
 		contentPane.add(lblUsersInGroup);
 		
 		btnInviteUser = new JButton("Invite User");
+		btnInviteUser.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
+		btnInviteUser.setForeground(new Color(255, 255, 255));
+		btnInviteUser.setBackground(new Color(0, 0, 128));
 		btnInviteUser.setBounds(429, 339, 145, 37);
 		btnInviteUser.addActionListener(new ActionListener() {
 			@Override
@@ -116,6 +143,14 @@ public class GroupChat extends JFrame {
 			}
 		});
 		contentPane.add(btnInviteUser);
+		
+		listUsers = new JList(listUsersModel);
+		listUsers.setFont(new Font("Calibri", Font.BOLD, 14));
+		listUsers.setBounds(429, 36, 145, 244);
+		
+		usersScrollPane = new JScrollPane(listUsers);
+		usersScrollPane.setBounds(429, 36, 145, 244);
+		contentPane.add(usersScrollPane);
 
 		this.setVisible(true);
 	}

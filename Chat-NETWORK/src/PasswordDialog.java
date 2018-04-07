@@ -16,15 +16,18 @@ import java.awt.event.ActionEvent;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.awt.Font;
+import javax.swing.SwingConstants;
+import javax.swing.JPasswordField;
+import java.awt.Color;
 
 public class PasswordDialog extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
-	private JTextField textField;
-	private JLabel lblPassword;
 	private String clientName;
 	private ObjectOutputStream out;
 	private String chatroomName;
+	private JPasswordField passwordField;
 	/**
 	 * Launch the application.
 
@@ -45,28 +48,46 @@ public class PasswordDialog extends JDialog {
 		this.out = out;
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
+		contentPanel.setBackground(new Color(255, 255, 255));
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
+		contentPanel.setLayout(null);
 		{
-			lblPassword = new JLabel("Enter the password:");
+			JLabel lblEnterTheChatroom = new JLabel("Enter the Chatroom Password:");
+			lblEnterTheChatroom.setForeground(new Color(0, 0, 128));
+			lblEnterTheChatroom.setHorizontalAlignment(SwingConstants.CENTER);
+			lblEnterTheChatroom.setFont(new Font("Trebuchet MS", Font.BOLD, 14));
+			lblEnterTheChatroom.setBounds(10, 88, 414, 14);
+			contentPanel.add(lblEnterTheChatroom);
 		}
 		{
-			textField = new JTextField();
-			textField.setColumns(10);
+			passwordField = new JPasswordField();
+			passwordField.setFont(new Font("Trebuchet MS", Font.PLAIN, 14));
+			passwordField.setBounds(69, 115, 309, 29);
+			contentPanel.add(passwordField);
 		}
-		contentPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		contentPanel.add(lblPassword);
-		contentPanel.add(textField);
+		{
+			JLabel lblIncorrectPassword = new JLabel("Incorrect password!");
+			lblIncorrectPassword.setHorizontalAlignment(SwingConstants.CENTER);
+			lblIncorrectPassword.setForeground(new Color(128, 0, 0));
+			lblIncorrectPassword.setFont(new Font("Tahoma", Font.PLAIN, 11));
+			lblIncorrectPassword.setBounds(69, 155, 309, 14);
+			contentPanel.add(lblIncorrectPassword);
+		}
 		{
 			JPanel buttonPane = new JPanel();
+			buttonPane.setBackground(new Color(255, 255, 255));
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton okButton = new JButton("OK");
+				okButton.setForeground(new Color(255, 255, 255));
+				okButton.setBackground(new Color(0, 0, 128));
+				okButton.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						try {
-							out.writeObject("JOIN_CHATROOM " + chatroomName + " " + textField.getText() + " " + clientName);
+							out.writeObject("JOIN_CHATROOM " + chatroomName + " " + String.valueOf(passwordField.getPassword()) + " " + clientName);
 							out.flush();
 						}catch(Exception ex){
 							ex.printStackTrace();
@@ -80,6 +101,9 @@ public class PasswordDialog extends JDialog {
 			}
 			{
 				JButton cancelButton = new JButton("Cancel");
+				cancelButton.setBackground(new Color(0, 0, 128));
+				cancelButton.setForeground(new Color(255, 255, 255));
+				cancelButton.setFont(new Font("Trebuchet MS", Font.PLAIN, 12));
 				cancelButton.setActionCommand("Cancel");
 				buttonPane.add(cancelButton);
 			}

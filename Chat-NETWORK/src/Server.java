@@ -78,7 +78,9 @@ public class Server {
                 for (ClientInfo client: clients)
                     toSend += client.getName() + " ";
 
-                out.writeObject("NAME_OK " + clients.size() + " " + toSend);
+                System.out.println(toSend);
+
+                out.writeObject("NAME_OK " + toSend);
                 out.flush();
 
                 for (ClientInfo user : clients) {

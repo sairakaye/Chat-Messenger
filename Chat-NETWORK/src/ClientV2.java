@@ -27,6 +27,8 @@ public class ClientV2 extends JFrame {
     private JButton btnDownload;
     private JList listChatroom;
     private JList listFiles;
+    private LoginDialog login;
+    private boolean existNameTrigger;
 
     ObjectInputStream in;
     ObjectOutputStream out;
@@ -37,13 +39,19 @@ public class ClientV2 extends JFrame {
     //add here windows for private message;
     private String clientName;
     private JButton btnGroupChat;
+    private JScrollPane messageScrollPane;
+    private JScrollPane onlineUsersScrollPane;
+    private JScrollPane chatroomsScrollPane;
+    private JScrollPane filesScrollPane;
+    private JLabel lblHello;
     /**
      * Launch the application.
      */
     public static void main(String[] args) {
 
         ClientV2 frame = new ClientV2();
-        frame.setVisible(true);
+       // frame.setVisible(false);
+       // frame.setVisible(true);
 
         try {
             frame.run();
@@ -56,19 +64,28 @@ public class ClientV2 extends JFrame {
      * Create the frame.
      */
     public ClientV2() {
+    	super.setTitle("The BuzzRoom (NETWORK - MP)");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 800, 570);
         contentPane = new JPanel();
+        contentPane.setBackground(Color.WHITE);
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
         contentPane.setLayout(null);
 
         messageArea = new JTextArea();
+        messageArea.setFont(new Font("Calibri", Font.PLAIN, 14));
         messageArea.setEditable(false);
         messageArea.setBounds(10, 40, 432, 435);
-        contentPane.add(messageArea);
+
+        
+        messageScrollPane = new JScrollPane(messageArea);
+        messageScrollPane.setBounds(10, 46, 432, 429);
+        contentPane.add(messageScrollPane);   
+       
 
         messageField = new JTextField();
+        messageField.setFont(new Font("Calibri", Font.PLAIN, 14));
         messageField.setBounds(10, 486, 432, 34);
         contentPane.add(messageField);
         messageField.setColumns(10);
@@ -86,6 +103,9 @@ public class ClientV2 extends JFrame {
         });
 
         btnSend = new JButton("Send");
+        btnSend.setBackground(new Color(0, 0, 128));
+        btnSend.setForeground(new Color(255, 255, 255));
+        btnSend.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
         btnSend.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 try {
@@ -97,32 +117,44 @@ public class ClientV2 extends JFrame {
                 messageField.setText("");
             }
         });
-        btnSend.setBounds(452, 450, 133, 70);
+        btnSend.setBounds(452, 461, 133, 59);
         contentPane.add(btnSend);
 
         // If needed
         onlineListModel = new DefaultListModel();
         chatroomListModel = new DefaultListModel();
         filesListModel = new DefaultListModel();
+       
 
         listOnline = new JList(onlineListModel);
+        listOnline.setFont(new Font("Calibri", Font.BOLD, 14));
         listOnline.setBounds(452, 40, 133, 240);
-        contentPane.add(listOnline);
+
+        onlineUsersScrollPane = new JScrollPane(listOnline);
+        onlineUsersScrollPane.setBounds(452, 161, 133, 138);
+        contentPane.add(onlineUsersScrollPane);
 
         listOnline.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         listFiles = new JList(filesListModel);
+        listFiles.setFont(new Font("Calibri", Font.BOLD, 14));
         listFiles.setBounds(597, 255, 179, 100);
-        contentPane.add(listFiles);
+        
+        filesScrollPane = new JScrollPane(listFiles);
+        filesScrollPane.setBounds(595, 46, 179, 100);
+        contentPane.add(filesScrollPane);
         
         btnPrivateMessage = new JButton("Private Message");
-        btnPrivateMessage.setBounds(454, 396, 133, 41);
+        btnPrivateMessage.setBackground(new Color(0, 0, 128));
+        btnPrivateMessage.setForeground(new Color(255, 255, 255));
+        btnPrivateMessage.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
+        btnPrivateMessage.setBounds(452, 409, 133, 41);
         contentPane.add(btnPrivateMessage);
         btnPrivateMessage.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 if (privateChatWindows == null) {
                     privateChatWindows = new ArrayList<>();
-                    privateChatWindows.add(new PrivateChat((String)listOnline.getSelectedValue(), out, clientName));
+                    privateChatWindows.add(new PrivateChat((String)listOnline.getSelectedValue(), out, clientName, privateChatWindows));
                 } else {
                     for (PrivateChat p : privateChatWindows) {
                         if (p.getToPMUser().equalsIgnoreCase((String)listOnline.getSelectedValue()))
@@ -133,6 +165,9 @@ public class ClientV2 extends JFrame {
         });
 
         btnFileTransfer = new JButton("Send File");
+        btnFileTransfer.setBackground(new Color(0, 0, 128));
+        btnFileTransfer.setForeground(new Color(255, 255, 255));
+        btnFileTransfer.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
         btnFileTransfer.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent arg0) {
         	    FileDialog dialog = new FileDialog((Frame) null, "Select file to Open");
@@ -158,20 +193,26 @@ public class ClientV2 extends JFrame {
                 }
         	}
         });
-        btnFileTransfer.setBounds(452, 293, 133, 36);
+        btnFileTransfer.setBounds(452, 310, 133, 36);
         contentPane.add(btnFileTransfer);
 
         btnJoinChatroom = new JButton("Join Chatroom");
+        btnJoinChatroom.setBackground(new Color(0, 0, 128));
+        btnJoinChatroom.setForeground(new Color(255, 255, 255));
+        btnJoinChatroom.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
         btnJoinChatroom.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 PasswordDialog pd = new PasswordDialog((String)listChatroom.getSelectedValue(), clientName, out);
                 pd.setVisible(true);
             }
         });
-        btnJoinChatroom.setBounds(595, 422, 179, 41);
+        btnJoinChatroom.setBounds(595, 423, 179, 41);
         contentPane.add(btnJoinChatroom);
 
         btnCreateChatroom = new JButton("Create Chatroom");
+        btnCreateChatroom.setBackground(new Color(0, 0, 128));
+        btnCreateChatroom.setForeground(new Color(255, 255, 255));
+        btnCreateChatroom.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
         btnCreateChatroom.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         	    NewChatroom dialog = new NewChatroom(clientName, out);
@@ -180,30 +221,33 @@ public class ClientV2 extends JFrame {
         	}
         });
         btnCreateChatroom.setBounds(595, 474, 179, 46);
+
         contentPane.add(btnCreateChatroom);
 
         listChatroom = new JList(chatroomListModel);
+        listChatroom.setFont(new Font("Calibri", Font.BOLD, 14));
         listChatroom.setBounds(595, 40, 179, 191);
-        contentPane.add(listChatroom);
+        
+        chatroomsScrollPane = new JScrollPane(listChatroom);
+        chatroomsScrollPane.setBounds(595, 232, 179, 180);
+        contentPane.add(chatroomsScrollPane);
         
         JLabel lblOnlineUsers = new JLabel("Online Users");
-        lblOnlineUsers.setFont(new Font("Tahoma", Font.PLAIN, 14));
+        lblOnlineUsers.setFont(new Font("Trebuchet MS", Font.BOLD, 14));
         lblOnlineUsers.setHorizontalAlignment(SwingConstants.CENTER);
-        lblOnlineUsers.setBounds(452, 16, 133, 18);
+        lblOnlineUsers.setBounds(452, 132, 133, 18);
         contentPane.add(lblOnlineUsers);
         
         JLabel lblChatrooms = new JLabel("Chatrooms");
-        lblChatrooms.setFont(new Font("Tahoma", Font.PLAIN, 14));
+        lblChatrooms.setFont(new Font("Trebuchet MS", Font.BOLD, 14));
         lblChatrooms.setHorizontalAlignment(SwingConstants.CENTER);
-        lblChatrooms.setBounds(595, 16, 179, 18);
+        lblChatrooms.setBounds(595, 209, 179, 18);
         contentPane.add(lblChatrooms);
         
-        JLabel lblChatroom = new JLabel("Hello! Let's Chat.");
-        lblChatroom.setFont(new Font("Tahoma", Font.PLAIN, 26));
-        lblChatroom.setBounds(10, 0, 332, 34);
-        contentPane.add(lblChatroom);
-        
         btnGroupChat = new JButton("Group Chat");
+        btnGroupChat.setBackground(new Color(0, 0, 128));
+        btnGroupChat.setForeground(new Color(255, 255, 255));
+        btnGroupChat.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
         btnGroupChat.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
                 List list = listOnline.getSelectedValuesList();
@@ -221,18 +265,32 @@ public class ClientV2 extends JFrame {
                 }
         	}
         });
-        btnGroupChat.setBounds(454, 342, 133, 41);
+        btnGroupChat.setBounds(452, 357, 133, 41);
         contentPane.add(btnGroupChat);
         
         JLabel lblFiles = new JLabel("Files");
         lblFiles.setHorizontalAlignment(SwingConstants.CENTER);
-        lblFiles.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        lblFiles.setBounds(597, 236, 179, 18);
+        lblFiles.setFont(new Font("Trebuchet MS", Font.BOLD, 14));
+        lblFiles.setBounds(595, 19, 179, 27);
         contentPane.add(lblFiles);
         
         btnDownload = new JButton("Download File");
-        btnDownload.setBounds(597, 368, 179, 41);
+        btnDownload.setBackground(new Color(0, 0, 128));
+        btnDownload.setForeground(new Color(255, 255, 255));
+        btnDownload.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
+        btnDownload.setBounds(595, 157, 179, 41);
         contentPane.add(btnDownload);
+        
+        JLabel lblLogo = new JLabel("New label");
+        lblLogo.setIcon(new ImageIcon("img\\LogoChatroom.png"));
+        lblLogo.setBounds(467, 16, 100, 100);
+        contentPane.add(lblLogo);
+        
+        lblHello = new JLabel("Global Chismis Room");
+        lblHello.setForeground(new Color(0, 0, 128));
+        lblHello.setFont(new Font("Trebuchet MS", Font.BOLD, 26));
+        lblHello.setBounds(10, 0, 432, 46);
+        contentPane.add(lblHello);
         btnDownload.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -283,10 +341,17 @@ public class ClientV2 extends JFrame {
                     line = (String) linez;
 
                     if (line.startsWith("GET_NAME")) {
-                        userName = getUserName();
-                        out.writeObject(userName);
-                        out.flush();
+                        if (login == null)
+                            login = new LoginDialog(out, existNameTrigger);
+                        else {
+                            login.dispose();
+                            existNameTrigger = true;
+                            login = new LoginDialog(out, existNameTrigger);
+                        }
                     } else if (line.startsWith("NAME_OK")) {
+                        this.setVisible(true);
+                        login.dispose();
+                        userName = login.getUserName();
                         onlineListModel.addElement(userName);
                         clientName = userName;
                         out.writeObject("GET_CHATROOMS");
@@ -304,26 +369,26 @@ public class ClientV2 extends JFrame {
 
                         if (privateChatWindows == null) {
                             privateChatWindows = new ArrayList<>();
-                            privateChatWindows.add(new PrivateChat(message[1], out, userName));
-                            privateChatWindows.get(privateChatWindows.size()-1).appendMessage(toSend);
+                            privateChatWindows.add(new PrivateChat(message[1], out, userName, privateChatWindows));
+                            privateChatWindows.get(privateChatWindows.size() - 1).appendMessage(toSend);
                         } else {
                             for (PrivateChat p : privateChatWindows) {
                                 if (p.getToPMUser().equalsIgnoreCase(message[1]))
                                     p.appendMessage(toSend);
                             }
                         }
-                    } else if (line.startsWith("TO_GC")){
+                    } else if (line.startsWith("TO_GC")) {
                         String[] message = line.trim().split("\\s+");
                         String toSend = "";
 
                         if (groupChatWindows == null) {
                             groupChatWindows = new ArrayList<>();
-                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel));
+                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel, groupChatWindows));
 
                             for (int i = 2; i < message.length; i++)
-                                groupChatWindows.get(groupChatWindows.size()-1).getUserListModel().addElement(message[i]);
+                                groupChatWindows.get(groupChatWindows.size() - 1).getUserListModel().addElement(message[i]);
                         }
-                    } else if (line.startsWith("SEND_GC")){
+                    } else if (line.startsWith("SEND_GC")) {
                         String[] message = line.trim().split("\\s+");
 
                         String toSend = "";
@@ -341,8 +406,8 @@ public class ClientV2 extends JFrame {
                                 }
                         } else {
                             groupChatWindows = new ArrayList<>();
-                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel));
-                            groupChatWindows.get(groupChatWindows.size()-1).appendMessage(toSend);
+                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel, groupChatWindows));
+                            groupChatWindows.get(groupChatWindows.size() - 1).appendMessage(toSend);
                         }
                     } else if (line.startsWith("CR_MESSAGE")) {
                         String[] message = line.trim().split("\\s+");
@@ -354,7 +419,7 @@ public class ClientV2 extends JFrame {
 
                         if (openedChatrooms == null) {
                             openedChatrooms = new ArrayList<>();
-                            openedChatrooms.add(new Chatroom(message[1], out, userName));
+                            openedChatrooms.add(new Chatroom(message[1], out, userName, openedChatrooms));
                             openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
                         } else {
                             for (Chatroom c : openedChatrooms) {
@@ -379,7 +444,7 @@ public class ClientV2 extends JFrame {
 
                         if (openedChatrooms == null) {
                             openedChatrooms = new ArrayList<>();
-                            openedChatrooms.add(new Chatroom(message[1], out, userName));
+                            openedChatrooms.add(new Chatroom(message[1], out, userName, openedChatrooms));
                             openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
                         } else {
                             for (Chatroom c : openedChatrooms) {
@@ -394,12 +459,12 @@ public class ClientV2 extends JFrame {
                         String[] message = line.trim().split("\\s+");
 
                         if (groupChatWindows != null) {
-                            for (GroupChat g: groupChatWindows)
+                            for (GroupChat g : groupChatWindows)
                                 if (message[1].equalsIgnoreCase(g.getID())) {
                                     for (int i = 2; i < message.length; i++) {
                                         int j = 0;
                                         boolean noDuplicate = true;
-                                        while (j < g.getUserListModel().getSize() && noDuplicate){
+                                        while (j < g.getUserListModel().getSize() && noDuplicate) {
                                             if (g.getUserListModel().get(j).toString().equals(message[i]))
                                                 noDuplicate = false;
                                             else j++;
@@ -410,17 +475,17 @@ public class ClientV2 extends JFrame {
                                     break;
                                 }
                         }
-                    } else if (line.startsWith("NAMES_IN_CR")){
+                    } else if (line.startsWith("NAMES_IN_CR")) {
                         String[] message = line.trim().split("\\s+");
 
-                        if (openedChatrooms != null){
+                        if (openedChatrooms != null) {
                             for (Chatroom c : openedChatrooms)
-                                if(message[1].equalsIgnoreCase(c.getChatroomName())) {
-                                    for (int i = 2; i < message.length; i++){
+                                if (message[1].equalsIgnoreCase(c.getChatroomName())) {
+                                    for (int i = 2; i < message.length; i++) {
                                         int j = 0;
                                         boolean noDuplicate = true;
 
-                                        while (j < c.getUserListModel().getSize() && noDuplicate){
+                                        while (j < c.getUserListModel().getSize() && noDuplicate) {
                                             if (c.getUserListModel().get(j).toString().equals(message[i]))
                                                 noDuplicate = false;
                                             else j++;
@@ -437,11 +502,11 @@ public class ClientV2 extends JFrame {
                         filesListModel.addElement(message[1]);
                     }
 
-                    if (line.startsWith("DISCONNECT")){
+                    if (line.startsWith("DISCONNECT")) {
                         String[] temp = line.trim().split("\\s+");
                         System.out.println("dc " + temp[1]);
 
-                        for (int j = 0; j < onlineListModel.getSize(); j++){
+                        for (int j = 0; j < onlineListModel.getSize(); j++) {
                             System.out.println(onlineListModel.get(j));
                             String compare = (String) onlineListModel.get(j);
 
@@ -457,7 +522,7 @@ public class ClientV2 extends JFrame {
                         for (int i = 1; i < temp.length; i++) {
                             boolean isToAdd = true;
                             for (int j = 0; j < onlineListModel.getSize(); j++) {
-                                String compare = (String)onlineListModel.get(j);
+                                String compare = (String) onlineListModel.get(j);
 
                                 if (compare.equalsIgnoreCase(temp[i])) {
                                     isToAdd = false;
@@ -496,10 +561,6 @@ public class ClientV2 extends JFrame {
                     //exceptions occur if this is included since the outputstream was already flushed.
             /*out.writeUTF("GET_NAME_CLIENTS");
             out.flush();*/
-
-                }
-                else{
-
                 }
             }catch(Exception ex){
                 ex.printStackTrace();
