@@ -1,3 +1,5 @@
+package src;
+
 import javax.swing.*;
 import java.io.*;
 import java.lang.reflect.Array;
@@ -10,7 +12,7 @@ import java.util.HashSet;
 
 public class Server {
     private static final int PORT = 49152;
-    private static HashSet<String> names = new HashSet<>();
+    private static final HashSet<String> names = new HashSet<>();
     //private static HashSet<PrintWriter> writers = new HashSet<>();
     private static ArrayList<ClientInfo> clients = new ArrayList<>();
     //private static ArrayList<Handler> handlers = new ArrayList<Handler>();
@@ -24,9 +26,9 @@ public class Server {
     private String nameServer;
     private static JTextArea serverLog;
 
-    public Server(String name, JTextArea serverLog){
+    Server(String name, JTextArea serverLog){
         nameServer = name;
-        this.serverLog = serverLog;
+        Server.serverLog = serverLog;
     }
 
 //    public static void main(String[] args) throws Exception {
@@ -56,16 +58,13 @@ public class Server {
         running = true;
         serverLog.append("The server is running\n");
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (running){
-                    try {
-                        Socket client = listener.accept();
-                        new Handler(client).start();
-                    }catch(Exception ex) {
-                        ex.printStackTrace();
-                    }
+        new Thread(() -> {
+            while (running){
+                try {
+                    Socket client = listener.accept();
+                    new Handler(client).start();
+                }catch(Exception ex) {
+                    ex.printStackTrace();
                 }
             }
         }).start();
@@ -89,7 +88,7 @@ public class Server {
         private ObjectOutputStream out;
         private ClientInfo user;
 
-        public Handler(Socket socket) {
+        Handler(Socket socket) {
             this.socket = socket;
         }
 
@@ -112,6 +111,7 @@ public class Server {
                     if (name == null) {
                         return;
                     }
+
                     synchronized (names) {
                         if (!names.contains(name)) {
                             names.add(name);
@@ -120,15 +120,16 @@ public class Server {
                     }
                 }
 
-                String toSend = "";
+                StringBuilder toSend = new StringBuilder();
 
                 for (ClientInfo client: clients)
-                    toSend += client.getName() + " ";
+                    toSend.append(client.getName()).append(" ");
 
                 System.out.println(toSend);
 
                 out.writeObject("NAME_OK " + toSend);
                 out.flush();
+                serverLog.append(name + " has connected to the server\n");
 
                 for (ClientInfo user : clients) {
                     user.getWriter().writeObject("MESSAGE " + name + " has joined the chat room!");
@@ -139,7 +140,7 @@ public class Server {
                 clients.add(user);
 
                 while (running) {
-                    String input = "";
+                    String input;
                     Object inz;
                     try {
                         inz = in.readObject();
@@ -153,14 +154,15 @@ public class Server {
                                 String[] messages = input.split("\\s+");
 
                                 // Inefficient solution
-                                String message = "";
+                                StringBuilder message = new StringBuilder();
                                 for (int i = 3; i < messages.length; i++) {
-                                    message += messages[i] + " ";
+                                    message.append(messages[i]).append(" ");
                                 }
 
                                 for (ClientInfo client : clients) {
                                     if (client.getName().equalsIgnoreCase(messages[1])) {
                                         client.getWriter().writeObject("SEND_PM " + messages[2] + " " + client.getName() + " " + name + ": " + message);
+                                        serverLog.append(name + " is sending a private message to " + client.getName());
                                         break;
                                     }
                                 }
@@ -168,19 +170,20 @@ public class Server {
                                 out.writeObject("SEND_PM " + messages[1] + " " + messages[2] + " " + name + ": " + message);
                                 out.flush();
                             } else if (input.startsWith("GET_NAME_CLIENTS")) {
-                                toSend = "";
+                                serverLog.append("Someone is sending a message to the chatroom \n");
+                                toSend = new StringBuilder();
 
                                 for (ClientInfo client : clients)
-                                    toSend += client.getName() + " ";
+                                    toSend.append(client.getName()).append(" ");
 
                                 out.writeObject("NAME_CLIENTS " + toSend);
                                 out.flush();
 
                             } else if (input.startsWith("GET_CHATROOMS")) {
-                                toSend = "";
+                                toSend = new StringBuilder();
 
                                 for (String key : chatrooms.keySet())
-                                    toSend += key + " ";
+                                    toSend.append(key).append(" ");
 
                                 System.out.println(toSend);
 
@@ -193,7 +196,7 @@ public class Server {
                             } else if (input.startsWith("CREATE_GC")) {
                                 String[] message = input.trim().split("\\s+");
                                 ArrayList<ClientInfo> clientsList = new ArrayList<ClientInfo>();
-                                String clientNames = "";
+                                StringBuilder clientNames = new StringBuilder();
 
                                 for (int i = 1; i < message.length; i++) {
                                     for (ClientInfo client: clients) {
@@ -207,7 +210,7 @@ public class Server {
                                 groupChats.put(Integer.toString(groupChatID), clientsList);
 
                                 for (ClientInfo client: clientsList)
-                                    clientNames += client.getName() + " ";
+                                    clientNames.append(client.getName()).append(" ");
 
 
 
@@ -216,10 +219,9 @@ public class Server {
                                 out.flush();
 
                                 ++groupChatID;
-                            } else if (input.startsWith("ADD_GC")){
+                            } else if (input.startsWith("ADD_GC")) {
                                 String[] message = input.trim().split("\\s+");
                                 ArrayList<ClientInfo> groupChatUsers = groupChats.get(message[1]);
-                                String users = "";
                                 for (int i = 2; i < message.length; i++){
                                     for (ClientInfo client : clients){
                                         if (message[i].equalsIgnoreCase(client.getName())){
@@ -231,7 +233,7 @@ public class Server {
                                 groupChats.put(message[1], groupChatUsers);
 
                                 for (ClientInfo client: groupChatUsers)
-                                    users += client.getName() + " ";
+                                    ;
 
 
 
@@ -242,10 +244,10 @@ public class Server {
                             } else if (input.startsWith("GC_MES")){
                                 String[] message = input.trim().split("\\s+");
                                 ArrayList<ClientInfo> groupChatUsers = groupChats.get(message[1]);
-                                String deliver = "";
+                                StringBuilder deliver = new StringBuilder();
 
                                 for (int i = 2; i < message.length; i++)
-                                    deliver += message[i] + " ";
+                                    deliver.append(message[i]).append(" ");
 
                                 for (ClientInfo client: groupChatUsers) {
                                     client.getWriter().writeObject("SEND_GC " + message[1] + " " + deliver);
@@ -256,10 +258,10 @@ public class Server {
                                 String[] message = input.trim().split("\\s+");
                                 String key = message[1];
                                 ArrayList<ClientInfo> groupChatUsers = groupChats.get(key);
-                                String names = "";
+                                StringBuilder names = new StringBuilder();
 
                                 for (ClientInfo c: groupChatUsers)
-                                    names += c.getName() + " ";
+                                    names.append(c.getName()).append(" ");
 
                                 out.writeObject("NAMES_IN_GC " + message[1] + " " + names);
                                 out.flush();
@@ -268,10 +270,10 @@ public class Server {
                                 String[] message = input.trim().split("\\s+");
                                 String key = message[1];
                                 ArrayList<ClientInfo> chatroomUsers = chatrooms.get(key);
-                                String names = "";
+                                StringBuilder names = new StringBuilder();
 
                                 for (ClientInfo c : chatroomUsers)
-                                    names += c.getName() + " ";
+                                    names.append(c.getName()).append(" ");
 
                                 out.writeObject("NAMES_IN_CR " + message[1] + " " + names);
                                 out.flush();
@@ -304,6 +306,7 @@ public class Server {
                             } else if (input.startsWith("JOIN_CHATROOM")) {
                                 String[] message = input.trim().split("\\s+");
                                 ArrayList<ClientInfo> curr = chatrooms.get(message[1]);
+                                serverLog.append(message[3] + " is joining the group chat\n");
 
                                 String passwordCompare = chatroomPasswords.get(message[1]);
 
@@ -325,10 +328,10 @@ public class Server {
                                 String[] messages = input.trim().split("\\s+");
                                 ArrayList<ClientInfo> curr = chatrooms.get(messages[1]);
 
-                                String message = "";
+                                StringBuilder message = new StringBuilder();
 
                                 for (int i = 2; i < messages.length; i++) {
-                                    message += messages[i] + " ";
+                                    message.append(messages[i]).append(" ");
                                 }
 
                                 for (ClientInfo client : curr) {
@@ -347,14 +350,13 @@ public class Server {
                                     if(target.equals(file.getName()))
                                         targetFile = file;
 
-                                // change this to absolute
                                 String path = System.getProperty("user.dir") + "\\" +
                                          targetFile.getName() + targetFile.getExtension();
                                 System.out.println(path);
 
                                 try (FileOutputStream fos = new FileOutputStream(path)) {
                                     fos.write(targetFile.getContent());
-                                    System.out.println("File sent!");
+                                    serverLog.append("File is being downloaded\n");
                                 }
 
                             } else {
@@ -365,6 +367,7 @@ public class Server {
                             }
                         }
                         else {
+                            serverLog.append("Uploading a file \n");
                             FileToTransfer file = (FileToTransfer) inz;
 
                             files.add(file);
@@ -384,7 +387,7 @@ public class Server {
             } finally {
                 if (name != null) {
                     names.remove(name);
-                    serverLog.append(name + " is disconnected from the server.\n");
+                    serverLog.append(name + " has disconnected from the server.\n");
 
                     if (out != null) {
                         clients.remove(user);
@@ -415,7 +418,7 @@ public class Server {
                     out.close();
                     in.close();
                     socket.close();
-                } catch (IOException e) {
+                } catch (IOException ignored) {
 
                 }
             }

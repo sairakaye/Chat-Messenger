@@ -1,3 +1,5 @@
+package src;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,19 +16,19 @@ public class ClientV2 extends JFrame {
 
     private JPanel contentPane;
     private JTextField messageField;
-    private JList listOnline;
+    private JList<String> listOnline;
     private JTextArea messageArea;
     private JButton btnSend;
-    private DefaultListModel onlineListModel;
-    private DefaultListModel chatroomListModel;
-    private DefaultListModel filesListModel;
+    private DefaultListModel<String> onlineListModel;
+    private DefaultListModel<String> chatroomListModel;
+    private DefaultListModel<String> filesListModel;
     private JButton btnPrivateMessage;
     private JButton btnFileTransfer;
     private JButton btnJoinChatroom;
     private JButton btnCreateChatroom;
     private JButton btnDownload;
-    private JList listChatroom;
-    private JList listFiles;
+    private JList<String> listChatroom;
+    private JList<String> listFiles;
     private LoginDialog login;
     private boolean existNameTrigger;
 
@@ -121,12 +123,12 @@ public class ClientV2 extends JFrame {
         contentPane.add(btnSend);
 
         // If needed
-        onlineListModel = new DefaultListModel();
-        chatroomListModel = new DefaultListModel();
-        filesListModel = new DefaultListModel();
+        onlineListModel = new DefaultListModel<>();
+        chatroomListModel = new DefaultListModel<>();
+        filesListModel = new DefaultListModel<>();
        
 
-        listOnline = new JList(onlineListModel);
+        listOnline = new JList<>(onlineListModel);
         listOnline.setFont(new Font("Calibri", Font.BOLD, 14));
         listOnline.setBounds(452, 40, 133, 240);
 
@@ -136,7 +138,7 @@ public class ClientV2 extends JFrame {
 
         listOnline.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
-        listFiles = new JList(filesListModel);
+        listFiles = new JList<>(filesListModel);
         listFiles.setFont(new Font("Calibri", Font.BOLD, 14));
         listFiles.setBounds(597, 255, 179, 100);
         
@@ -150,16 +152,14 @@ public class ClientV2 extends JFrame {
         btnPrivateMessage.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
         btnPrivateMessage.setBounds(452, 409, 133, 41);
         contentPane.add(btnPrivateMessage);
-        btnPrivateMessage.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                if (privateChatWindows == null) {
-                    privateChatWindows = new ArrayList<>();
-                    privateChatWindows.add(new PrivateChat((String)listOnline.getSelectedValue(), out, clientName, privateChatWindows));
-                } else {
-                    for (PrivateChat p : privateChatWindows) {
-                        if (p.getToPMUser().equalsIgnoreCase((String)listOnline.getSelectedValue()))
-                            p.setVisible(true);
-                    }
+        btnPrivateMessage.addActionListener(arg0 -> {
+            if (privateChatWindows == null) {
+                privateChatWindows = new ArrayList<>();
+                privateChatWindows.add(new PrivateChat(listOnline.getSelectedValue(), out, clientName, privateChatWindows));
+            } else {
+                for (PrivateChat p : privateChatWindows) {
+                    if (p.getToPMUser().equalsIgnoreCase(listOnline.getSelectedValue()))
+                        p.setVisible(true);
                 }
             }
         });
@@ -168,30 +168,28 @@ public class ClientV2 extends JFrame {
         btnFileTransfer.setBackground(new Color(0, 0, 128));
         btnFileTransfer.setForeground(new Color(255, 255, 255));
         btnFileTransfer.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
-        btnFileTransfer.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent arg0) {
-        	    FileDialog dialog = new FileDialog((Frame) null, "Select file to Open");
-        	    dialog.setVisible(true);
+        btnFileTransfer.addActionListener(arg0 -> {
+            FileDialog dialog = new FileDialog((Frame) null, "Select file to Open");
+            dialog.setVisible(true);
 
-        	    File[] files = dialog.getFiles();
+            File[] files = dialog.getFiles();
 
-        	    File file = files[0];
+            File file = files[0];
 
-        	    try {
-        	        if(file.exists()) {
-        	            byte[] content = Files.readAllBytes(file.toPath());
-        	            String temp = file.getName();
-        	            String[] name = temp.split("\\.");
-        	            FileToTransfer ftf = new FileToTransfer(content, name[0], name[1]);
+            try {
+                if(file.exists()) {
+                    byte[] content = Files.readAllBytes(file.toPath());
+                    String temp = file.getName();
+                    String[] name = temp.split("\\.");
+                    FileToTransfer ftf = new FileToTransfer(content, name[0], name[1]);
 
-        	            out.writeObject(ftf);
-        	            out.flush();
-                    }
+                    out.writeObject(ftf);
+                    out.flush();
+}
 
-                } catch(IOException e) {
-        	        e.printStackTrace();
-                }
-        	}
+} catch(IOException e) {
+                e.printStackTrace();
+}
         });
         btnFileTransfer.setBounds(452, 310, 133, 36);
         contentPane.add(btnFileTransfer);
@@ -200,11 +198,9 @@ public class ClientV2 extends JFrame {
         btnJoinChatroom.setBackground(new Color(0, 0, 128));
         btnJoinChatroom.setForeground(new Color(255, 255, 255));
         btnJoinChatroom.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
-        btnJoinChatroom.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                PasswordDialog pd = new PasswordDialog((String)listChatroom.getSelectedValue(), clientName, out);
-                pd.setVisible(true);
-            }
+        btnJoinChatroom.addActionListener(e -> {
+            PasswordDialog pd = new PasswordDialog(listChatroom.getSelectedValue(), clientName, out);
+            pd.setVisible(true);
         });
         btnJoinChatroom.setBounds(595, 423, 179, 41);
         contentPane.add(btnJoinChatroom);
@@ -213,18 +209,16 @@ public class ClientV2 extends JFrame {
         btnCreateChatroom.setBackground(new Color(0, 0, 128));
         btnCreateChatroom.setForeground(new Color(255, 255, 255));
         btnCreateChatroom.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
-        btnCreateChatroom.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        	    NewChatroom dialog = new NewChatroom(clientName, out);
-        	    dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        	    dialog.setVisible(true);
-        	}
+        btnCreateChatroom.addActionListener(e -> {
+            NewChatroom dialog = new NewChatroom(clientName, out);
+            dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            dialog.setVisible(true);
         });
         btnCreateChatroom.setBounds(595, 474, 179, 46);
 
         contentPane.add(btnCreateChatroom);
 
-        listChatroom = new JList(chatroomListModel);
+        listChatroom = new JList<>(chatroomListModel);
         listChatroom.setFont(new Font("Calibri", Font.BOLD, 14));
         listChatroom.setBounds(595, 40, 179, 191);
         
@@ -250,15 +244,15 @@ public class ClientV2 extends JFrame {
         btnGroupChat.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
         btnGroupChat.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-                List list = listOnline.getSelectedValuesList();
-                String toSend = "CREATE_GC " + clientName + " ";
+                List<String> list = listOnline.getSelectedValuesList();
+                StringBuilder toSend = new StringBuilder("CREATE_GC " + clientName + " ");
 
-                for (int i = 0; i < list.size(); i++) {
-                    toSend += list.get(i) + " ";
+                for (String aList : list) {
+                    toSend.append(aList).append(" ");
                 }
 
                 try {
-                    out.writeObject(toSend);
+                    out.writeObject(toSend.toString());
                     out.flush();
                 }catch (IOException ex){
                     ex.printStackTrace();
@@ -291,18 +285,15 @@ public class ClientV2 extends JFrame {
         lblHello.setFont(new Font("Trebuchet MS", Font.BOLD, 26));
         lblHello.setBounds(10, 0, 432, 46);
         contentPane.add(lblHello);
-        btnDownload.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String name = (String)listFiles.getSelectedValue();
-                String[] temp = name.split("\\.");
+        btnDownload.addActionListener(e -> {
+            String name = listFiles.getSelectedValue();
+            String[] temp = name.split("\\.");
 
-                try {
-                    out.writeObject("DOWNLOAD_FILE " + temp[0]);
-                    out.flush();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+            try {
+                out.writeObject("DOWNLOAD_FILE " + temp[0]);
+                out.flush();
+            } catch (IOException e1) {
+                e1.printStackTrace();
             }
         });
         
@@ -508,7 +499,7 @@ public class ClientV2 extends JFrame {
 
                         for (int j = 0; j < onlineListModel.getSize(); j++) {
                             System.out.println(onlineListModel.get(j));
-                            String compare = (String) onlineListModel.get(j);
+                            String compare = onlineListModel.get(j);
 
                             if (compare.equalsIgnoreCase(temp[1]))
                                 onlineListModel.removeElementAt(j);
@@ -522,7 +513,7 @@ public class ClientV2 extends JFrame {
                         for (int i = 1; i < temp.length; i++) {
                             boolean isToAdd = true;
                             for (int j = 0; j < onlineListModel.getSize(); j++) {
-                                String compare = (String) onlineListModel.get(j);
+                                String compare = onlineListModel.get(j);
 
                                 if (compare.equalsIgnoreCase(temp[i])) {
                                     isToAdd = false;
@@ -543,7 +534,7 @@ public class ClientV2 extends JFrame {
                         for (int i = 1; i < temp.length; i++) {
                             boolean isToAdd = true;
                             for (int j = 0; j < chatroomListModel.getSize(); j++) {
-                                String compare = (String) chatroomListModel.get(j);
+                                String compare = chatroomListModel.get(j);
 
                                 if (compare.equalsIgnoreCase(temp[i])) {
                                     isToAdd = false;
