@@ -1,5 +1,3 @@
-package src;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -65,12 +63,12 @@ public class ServerV2 extends JFrame {
 		contentPane.add(txtLocalhost);
 		txtLocalhost.setColumns(10);
 
-		serverLogic = new Server(txtLocalhost.getText(), serverLog);
+		serverLogic = new Server(serverLog);
 
 		JButton btnRun = new JButton("Run Server");
 		btnRun.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    serverLogic.startServer();
+			    serverLogic.startServer(txtLocalhost.getText());
 			}
 		});
 		btnRun.setFont(new Font("Trebuchet MS", Font.BOLD, 12));

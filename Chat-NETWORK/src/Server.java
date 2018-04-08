@@ -1,5 +1,3 @@
-package src;
-
 import javax.swing.*;
 import java.io.*;
 import java.lang.reflect.Array;
@@ -23,33 +21,15 @@ public class Server {
     private static int groupChatID = 0;
     private ServerSocket listener;
     private static boolean running;
-    private String nameServer;
     private static JTextArea serverLog;
 
-    Server(String name, JTextArea serverLog){
-        nameServer = name;
+    Server(JTextArea serverLog){
         Server.serverLog = serverLog;
     }
 
-//    public static void main(String[] args) throws Exception {
-//        System.out.println("The chat server is running.");
-//
-//        //Change the localhost into an IP address of your computer in the network if it will be the server.
-//        InetAddress addr = InetAddress.getByName("localhost");
-//        ServerSocket listener = new ServerSocket(PORT, 50, addr);
-//
-//        try {
-//            while (true) {
-//                new Handler(listener.accept()).start();
-//            }
-//        } finally {
-//            listener.close();
-//        }
-//    }
-
-    public void startServer(){
+    public void startServer(String name){
         try {
-            InetAddress addr = InetAddress.getByName(nameServer);
+            InetAddress addr = InetAddress.getByName(name);
             listener = new ServerSocket(PORT, 50, addr);
         }catch (Exception e){
             e.printStackTrace();

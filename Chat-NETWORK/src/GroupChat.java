@@ -1,5 +1,3 @@
-package src;
-
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -28,24 +26,7 @@ public class GroupChat extends JFrame {
 	private String groupChatID;
 	private JScrollPane usersScrollPane;
 	private JScrollPane messageScrollPane;
-
 	private ArrayList<GroupChat> openedGroupChat;
-
-
-	/*
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					GroupChat frame = new GroupChat("e", null, null );
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-	*/
 
 	public GroupChat(String groupChatID, ObjectOutputStream out, String user, DefaultListModel onlineListModel, ArrayList<GroupChat> openedGroupChat) {
 		this.setTitle("Group Chat - ID #" + groupChatID);

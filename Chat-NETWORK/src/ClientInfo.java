@@ -1,9 +1,4 @@
-package src;
-
-import javax.lang.model.type.PrimitiveType;
-import java.io.BufferedReader;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 
 public class ClientInfo {
     ObjectOutputStream writer;
