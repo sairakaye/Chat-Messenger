@@ -29,7 +29,6 @@ public class GroupChat extends JFrame {
 	private String groupChatID;
 	private JScrollPane usersScrollPane;
 	private JScrollPane messageScrollPane;
-	private ArrayList<GroupChat> openedGroupChat;
 	private JLabel lblFiles;
 	private JScrollPane filesScrollPane;
 	private JButton btnDownloadFile;
@@ -78,7 +77,7 @@ public class GroupChat extends JFrame {
 		messageField.setColumns(10);
 		
 		btnSend = new JButton("Send");
-		btnSend.setFont(new Font("Trebuchet MS", Font.PLAIN, 12));
+		btnSend.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
 		btnSend.setForeground(new Color(255, 255, 255));
 		btnSend.setBackground(new Color(0, 0, 139));
 		btnSend.addActionListener(new ActionListener() {

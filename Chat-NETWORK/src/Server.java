@@ -11,9 +11,7 @@ import java.util.HashSet;
 public class Server {
     private static final int PORT = 49152;
     private static final HashSet<String> names = new HashSet<>();
-    //private static HashSet<PrintWriter> writers = new HashSet<>();
     private static ArrayList<ClientInfo> clients = new ArrayList<>();
-    //private static ArrayList<Handler> handlers = new ArrayList<Handler>();
     private static HashMap<String, ArrayList<ClientInfo>> groupChats = new HashMap<>();
     private static HashMap<String, ArrayList<ClientInfo>> chatrooms = new HashMap<>();
     private static HashMap<String, String> chatroomPasswords = new HashMap<>();
@@ -36,7 +34,7 @@ public class Server {
             return;
         }
         running = true;
-        serverLog.append("The server is running\n");
+        serverLog.append("The server is running...\n");
 
         new Thread(() -> {
             while (running){
@@ -52,7 +50,7 @@ public class Server {
 
     public void stopServer(){
         running = false;
-        serverLog.append("The server is stopped\n");
+        serverLog.append("The server is stopped!\n");
         try {
             listener.close();
         }catch(Exception e){
@@ -150,7 +148,6 @@ public class Server {
                                 out.writeObject("SEND_PM " + messages[1] + " " + messages[2] + " " + name + ": " + message);
                                 out.flush();
                             } else if (input.startsWith("GET_NAME_CLIENTS")) {
-                                serverLog.append("Someone is sending a message to the chatroom \n");
                                 toSend = new StringBuilder();
 
                                 for (ClientInfo client : clients)
@@ -171,8 +168,7 @@ public class Server {
                                     user.getWriter().writeObject("CHATROOMS " + toSend);
                                     user.getWriter().flush();
                                 }
-                                /*out.writeObject("CHATROOMS " + toSend);
-                                out.flush();*/
+
                             } else if (input.startsWith("CREATE_GC")) {
                                 String[] message = input.trim().split("\\s+");
                                 ArrayList<ClientInfo> clientsList = new ArrayList<ClientInfo>();
@@ -192,9 +188,6 @@ public class Server {
                                 for (ClientInfo client: clientsList)
                                     clientNames.append(client.getName()).append(" ");
 
-
-
-                                // For testing purposes
                                 out.writeObject("TO_GC " + groupChatID + " " + clientNames);
                                 out.flush();
 
@@ -212,12 +205,6 @@ public class Server {
                                 }
                                 groupChats.put(message[1], groupChatUsers);
 
-                                for (ClientInfo client: groupChatUsers)
-                                    ;
-
-
-
-                                // For testing purposes
                                 out.writeObject("TO_GC " + groupChatID + " " + groupChatUsers);
                                 out.flush();
 
@@ -263,8 +250,6 @@ public class Server {
                                 String roomName = message[1];
                                 ArrayList<ClientInfo> clientsList = chatrooms.get(roomName);
 
-
-                                // if not null ( later na yung hindi mag-aadd )
                                 if (clientsList == null) {
                                     clientsList = new ArrayList<ClientInfo>();
 
@@ -286,7 +271,7 @@ public class Server {
                             } else if (input.startsWith("JOIN_CHATROOM")) {
                                 String[] message = input.trim().split("\\s+");
                                 ArrayList<ClientInfo> curr = chatrooms.get(message[1]);
-                                serverLog.append(message[3] + " is joining the group chat\n");
+                                serverLog.append(message[3] + " is joining the group chat!\n");
 
                                 String passwordCompare = chatroomPasswords.get(message[1]);
 
@@ -360,13 +345,6 @@ public class Server {
                                 }
                                 groupChatUsers.remove(i);
                                 groupChatUsers.trimToSize();
-                                /*for (ClientInfo c: groupChatUsers) {
-                                    if (c.getName().equalsIgnoreCase(remove)) {
-                                        groupChatUsers.remove(c);
-                                        break;
-                                    }
-                                    groupChatUsers.trimToSize();
-                                }*/
 
                                 for (ClientInfo c: groupChatUsers)
                                     names.append(c.getName()).append(" ");
@@ -454,7 +432,7 @@ public class Server {
                     in.close();
                     socket.close();
                 } catch (IOException ignored) {
-
+                    // Do nothing.
                 }
             }
         }

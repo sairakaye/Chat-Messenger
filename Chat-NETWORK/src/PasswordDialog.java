@@ -22,20 +22,7 @@ public class PasswordDialog extends JDialog {
 	private String chatroomName;
 	private JPasswordField passwordField;
 	private JLabel lblIncorrectPassword;
-	/**
-	 * Launch the application.
 
-	public static void main(String[] args) {
-		try {
-			PasswordDialog dialog = new PasswordDialog();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	 */
 	public PasswordDialog(String chatroomName, String clientName, ObjectOutputStream out) {
 		this.chatroomName = chatroomName;
 		this.clientName = clientName;

@@ -20,17 +20,11 @@ public class ServerV2 extends JFrame {
 	private JTextArea serverLog;
 	private Server serverLogic;
 
-	/**
-	 * Launch the application.
-	 */
 	public static void main(String[] args) {
 	    ServerV2 frame = new ServerV2();
 		frame.setVisible(true);
 	}
 
-	/**
-	 * Create the frame.
-	 */
 	public ServerV2() {
 		this.setTitle("The BuzzRoom's Server");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

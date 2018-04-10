@@ -28,7 +28,6 @@ public class Chatroom extends JFrame {
 	private JScrollPane messageScrollPane;
 	private JScrollPane userScrollPane;
 
-	private ArrayList<Chatroom> openedChatrooms;
 	private JScrollPane scrollPane;
 	private JLabel lblFiles;
 	private DefaultListModel filesListModel;

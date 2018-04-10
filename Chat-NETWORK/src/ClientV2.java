@@ -30,13 +30,12 @@ public class ClientV2 extends JFrame {
     private LoginDialog login;
     private boolean existNameTrigger;
 
-    ObjectInputStream in;
-    ObjectOutputStream out;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
     private ArrayList<Chatroom> openedChatrooms;
     private ArrayList<GroupChat> groupChatWindows;
     private ArrayList<PrivateChat> privateChatWindows;
 
-    //add here windows for private message;
     private String clientName;
     private JButton btnGroupChat;
     private JScrollPane messageScrollPane;
@@ -44,13 +43,9 @@ public class ClientV2 extends JFrame {
     private JScrollPane chatroomsScrollPane;
     private JScrollPane filesScrollPane;
     private JLabel lblHello;
-    /**
-     * Launch the application.
-     */
+
     public static void main(String[] args) {
         ClientV2 frame = new ClientV2();
-       // frame.setVisible(false);
-       // frame.setVisible(true);
 
         try {
             frame.run();
@@ -59,9 +54,6 @@ public class ClientV2 extends JFrame {
         }
     }
 
-    /**
-     * Create the frame.
-     */
     public ClientV2() {
     	super.setTitle("The BuzzRoom (NETWORK - MP)");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -325,7 +317,6 @@ public class ClientV2 extends JFrame {
         in = new ObjectInputStream(socket.getInputStream());
 
         String userName = null;
-        String[] names = null;
 
         // Process all messages from server, according to the protocol.
         while (true) {
@@ -379,7 +370,6 @@ public class ClientV2 extends JFrame {
                         }
                     } else if (line.startsWith("TO_GC")) {
                         String[] message = line.trim().split("\\s+");
-                        String toSend = "";
 
                         if (groupChatWindows == null) {
                             groupChatWindows = new ArrayList<>();
@@ -579,7 +569,6 @@ public class ClientV2 extends JFrame {
                         }
                     }
 
-                    // Start of something
                     if (line.startsWith("NAME_CLIENTS")) {
                         String[] temp = line.split("\\s+");
 
@@ -623,8 +612,7 @@ public class ClientV2 extends JFrame {
                     }
 
                 }
-            }catch(Exception ex){
-                //ex.printStackTrace();
+            } catch(Exception ex) {
                 System.exit(1);
             }
         }

@@ -1,8 +1,8 @@
 import java.io.ObjectOutputStream;
 
 public class ClientInfo {
-    ObjectOutputStream writer;
-    String name;
+    private ObjectOutputStream writer;
+    private String name;
 
     public ClientInfo(String name, ObjectOutputStream writer) {
         this.writer = writer;

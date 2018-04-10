@@ -16,30 +16,12 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 public class NewChatroom extends JDialog {
-
 	private final JPanel contentPanel = new JPanel();
 	private JTextField textField;
 	private ObjectOutputStream out;
 	private String clientName;
 	private JPasswordField passwordField;
 
-	/**
-	 * Launch the application.
-
-	public static void main(String[] args) {
-		try {
-			NewChatroom dialog = new NewChatroom();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	 */
-
-	/**
-	 * Create the dialog.
-	 */
 	public NewChatroom(String clientName, ObjectOutputStream out) {
 		this.out = out;
 		this.clientName = clientName;

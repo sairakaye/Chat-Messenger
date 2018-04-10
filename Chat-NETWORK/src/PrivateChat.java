@@ -27,21 +27,6 @@ public class PrivateChat extends JFrame {
 	private JButton btnDownloadFile;
 	private JScrollPane filesScrollPane;
 
-	/*
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					GroupChat frame = new GroupChat("e", null, null );
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-	*/
-
 	public PrivateChat(String toPMUser, ObjectOutputStream out, String user) {
 		this.setTitle("Private Chat with " + toPMUser);
 		this.out = out;
