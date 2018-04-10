@@ -76,6 +76,17 @@ public class LoginDialog extends JDialog {
 		textField.setBounds(183, 147, 221, 30);
 		contentPanel.add(textField);
 		textField.setColumns(10);
+		textField.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					userName = textField.getText();
+					out.writeObject(textField.getText());
+					out.flush();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 		
 		JLabel labelAskName = new JLabel("Enter your name:");
 		labelAskName.setFont(new Font("Trebuchet MS", Font.PLAIN, 18));

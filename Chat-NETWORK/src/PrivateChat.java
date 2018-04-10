@@ -41,20 +41,12 @@ public class PrivateChat extends JFrame {
 	}
 	*/
 
-	public PrivateChat(String toPMUser, ObjectOutputStream out, String user, ArrayList<PrivateChat> openedPrivateChats) {
+	public PrivateChat(String toPMUser, ObjectOutputStream out, String user) {
 		this.setTitle("Private Chat with " + toPMUser);
 		this.out = out;
 		this.user = user;
 		this.toPMUser = toPMUser;
-		this.openedPrivateChats = openedPrivateChats;
-		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		this.addWindowListener(new java.awt.event.WindowAdapter() {
-			@Override
-			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				openedPrivateChats.remove(this);
-				PrivateChat.super.dispose();
-			}
-		});
+		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
 
 		setBounds(100, 100, 575, 460);

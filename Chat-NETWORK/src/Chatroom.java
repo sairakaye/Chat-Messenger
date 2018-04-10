@@ -48,20 +48,12 @@ public class Chatroom extends JFrame {
 	}
 	*/
 
-	public Chatroom(String chatroomName, ObjectOutputStream out, String user, ArrayList<Chatroom> openedChatrooms) {
+	public Chatroom(String chatroomName, ObjectOutputStream out, String user) {
 		this.setTitle("Chatroom: " + chatroomName);
 		this.out = out;
 		this.user = user;
 		this.chatroomName = chatroomName;
-		this.openedChatrooms = openedChatrooms;
-		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		this.addWindowListener(new java.awt.event.WindowAdapter() {
-			@Override
-			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				openedChatrooms.remove(this);
-				Chatroom.super.dispose();
-			}
-		});
+		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		setBounds(100, 100, 600, 500);
 		contentPane = new JPanel();
 		contentPane.setBackground(new Color(255, 255, 255));
@@ -82,7 +74,7 @@ public class Chatroom extends JFrame {
 		contentPane.add(messageField);
 
 		messageField.addActionListener(new ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+			public void actionPerformed(ActionEvent evt) {
 				try {
 					out.writeObject("TO_CR " + chatroomName + " " + user + ": " + messageField.getText());
 					out.flush();

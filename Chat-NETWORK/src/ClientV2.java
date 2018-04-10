@@ -48,7 +48,6 @@ public class ClientV2 extends JFrame {
      * Launch the application.
      */
     public static void main(String[] args) {
-
         ClientV2 frame = new ClientV2();
        // frame.setVisible(false);
        // frame.setVisible(true);
@@ -152,7 +151,7 @@ public class ClientV2 extends JFrame {
         btnPrivateMessage.addActionListener(arg0 -> {
             if (privateChatWindows == null) {
                 privateChatWindows = new ArrayList<>();
-                privateChatWindows.add(new PrivateChat(listOnline.getSelectedValue(), out, clientName, privateChatWindows));
+                privateChatWindows.add(new PrivateChat(listOnline.getSelectedValue(), out, clientName));
             } else {
                 for (PrivateChat p : privateChatWindows) {
                     if (p.getToPMUser().equalsIgnoreCase(listOnline.getSelectedValue()))
@@ -295,21 +294,31 @@ public class ClientV2 extends JFrame {
         
     }
 
-    private String getUserName() {
+    private String getServer() {
         return JOptionPane.showInputDialog(
                 this,
-                "Choose a screen name:",
-                "Screen name selection",
-                JOptionPane.PLAIN_MESSAGE);
+                " IP Address of Server",
+                "Enter IP Address of the Server",
+                JOptionPane.QUESTION_MESSAGE);
     }
 
     private synchronized void run() throws IOException {
-
         // Make connection and initialize streams
+        Socket socket = null;
+        String serverAddress = null;
 
-        // Change the server address to the server's IP address if ever.
-        String serverAddress = "localhost";
-        Socket socket = new Socket(serverAddress, 49152);
+        while (socket == null) {
+            try {
+                serverAddress = getServer();
+
+                if (serverAddress == null)
+                    System.exit(0);
+
+                socket = new Socket(serverAddress, 49152);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         out = new ObjectOutputStream(socket.getOutputStream());
         out.flush();
@@ -356,12 +365,16 @@ public class ClientV2 extends JFrame {
 
                         if (privateChatWindows == null) {
                             privateChatWindows = new ArrayList<>();
-                            privateChatWindows.add(new PrivateChat(message[1], out, userName, privateChatWindows));
+                            privateChatWindows.add(new PrivateChat(message[1], out, userName));
                             privateChatWindows.get(privateChatWindows.size() - 1).appendMessage(toSend);
                         } else {
                             for (PrivateChat p : privateChatWindows) {
-                                if (p.getToPMUser().equalsIgnoreCase(message[1]))
+                                if (p.getToPMUser().equalsIgnoreCase(message[1])) {
                                     p.appendMessage(toSend);
+
+                                    if (p.isVisible() == false)
+                                        p.setVisible(true);
+                                }
                             }
                         }
                     } else if (line.startsWith("TO_GC")) {
@@ -370,7 +383,7 @@ public class ClientV2 extends JFrame {
 
                         if (groupChatWindows == null) {
                             groupChatWindows = new ArrayList<>();
-                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel, groupChatWindows));
+                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel));
 
                             for (int i = 2; i < message.length; i++)
                                 groupChatWindows.get(groupChatWindows.size() - 1).getUserListModel().addElement(message[i]);
@@ -387,13 +400,17 @@ public class ClientV2 extends JFrame {
                             for (GroupChat c : groupChatWindows)
                                 if (c.getID().equalsIgnoreCase(message[1])) {
                                     c.appendMessage(toSend);
+
+                                    if (c.isVisible() == false)
+                                        c.setVisible(true);
+
                                     out.writeObject("GET_NAMES_IN_GC " + message[1]);
                                     out.flush();
                                     break;
                                 }
                         } else {
                             groupChatWindows = new ArrayList<>();
-                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel, groupChatWindows));
+                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel));
                             groupChatWindows.get(groupChatWindows.size() - 1).appendMessage(toSend);
                         }
                     } else if (line.startsWith("CR_MESSAGE")) {
@@ -406,14 +423,19 @@ public class ClientV2 extends JFrame {
 
                         if (openedChatrooms == null) {
                             openedChatrooms = new ArrayList<>();
-                            openedChatrooms.add(new Chatroom(message[1], out, userName, openedChatrooms));
+                            openedChatrooms.add(new Chatroom(message[1], out, userName));
                             openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
                         } else {
                             for (Chatroom c : openedChatrooms) {
                                 if (c.getChatroomName().equalsIgnoreCase(message[1]))
                                     c.appendMessage(toSend);
+
+                                if (c.isVisible() == false)
+                                    c.setVisible(true);
                                 out.writeObject("GET_NAMES_IN_CR " + message[1]);
                                 out.flush();
+
+
                             }
                         }
 
@@ -429,18 +451,28 @@ public class ClientV2 extends JFrame {
                             toSend += message[i] + " ";
 
 
-                        if (openedChatrooms == null) {
-                            openedChatrooms = new ArrayList<>();
-                            openedChatrooms.add(new Chatroom(message[1], out, userName, openedChatrooms));
-                            openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
-                        } else {
-                            for (Chatroom c : openedChatrooms) {
-                                if (c.getChatroomName().equalsIgnoreCase(message[1])) {
-                                    c.appendMessage(toSend);
-                                    out.writeObject("GET_NAMES_IN_CR " + message[1]);
-                                    out.flush();
+                        if (!message[1].equalsIgnoreCase("REJECTED")) {
+                            if (openedChatrooms == null) {
+                                openedChatrooms = new ArrayList<>();
+                                openedChatrooms.add(new Chatroom(message[1], out, userName));
+                                openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
+                            } else {
+                                for (Chatroom c : openedChatrooms) {
+                                    if (c.getChatroomName().equalsIgnoreCase(message[1])) {
+                                        c.appendMessage(toSend);
+
+                                        if (c.isVisible() == false)
+                                            c.setVisible(true);
+
+                                        out.writeObject("GET_NAMES_IN_CR " + message[1]);
+                                        out.flush();
+                                    }
                                 }
                             }
+                        } else {
+                            PasswordDialog pd = new PasswordDialog(listChatroom.getSelectedValue(), clientName, out);
+                            pd.getLblIncorrectPassword().setVisible(true);
+                            pd.setVisible(true);
                         }
                     } else if (line.startsWith("NAMES_IN_GC")) {
                         String[] message = line.trim().split("\\s+");

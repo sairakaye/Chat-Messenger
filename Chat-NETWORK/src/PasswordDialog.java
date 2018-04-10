@@ -21,6 +21,7 @@ public class PasswordDialog extends JDialog {
 	private ObjectOutputStream out;
 	private String chatroomName;
 	private JPasswordField passwordField;
+	private JLabel lblIncorrectPassword;
 	/**
 	 * Launch the application.
 
@@ -60,12 +61,13 @@ public class PasswordDialog extends JDialog {
 			contentPanel.add(passwordField);
 		}
 		{
-			JLabel lblIncorrectPassword = new JLabel("Incorrect password!");
+			lblIncorrectPassword = new JLabel("Incorrect password!");
 			lblIncorrectPassword.setHorizontalAlignment(SwingConstants.CENTER);
 			lblIncorrectPassword.setForeground(new Color(128, 0, 0));
 			lblIncorrectPassword.setFont(new Font("Tahoma", Font.PLAIN, 11));
 			lblIncorrectPassword.setBounds(69, 155, 309, 14);
 			contentPanel.add(lblIncorrectPassword);
+			lblIncorrectPassword.setVisible(false);
 		}
 		{
 			JPanel buttonPane = new JPanel();
@@ -101,6 +103,10 @@ public class PasswordDialog extends JDialog {
 				buttonPane.add(cancelButton);
 			}
 		}
+	}
+
+	public JLabel getLblIncorrectPassword() {
+		return lblIncorrectPassword;
 	}
 
 }
