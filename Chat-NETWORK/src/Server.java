@@ -303,6 +303,13 @@ public class Server {
                                         client.getWriter().writeObject("JOIN_CR_MESSAGE " + message[1] + " " + message[3] + " has joined the chatroom.");
                                         client.getWriter().flush();
                                     }
+                                } else {
+                                    for (ClientInfo client: clients) {
+                                        if (client.getName().equalsIgnoreCase(message[3])) {
+                                            client.getWriter().writeObject("JOIN_CR_MESSAGE " + "REJECTED");
+                                            break;
+                                        }
+                                    }
                                 }
                             } else if (input.startsWith("TO_CR")) {
                                 String[] messages = input.trim().split("\\s+");

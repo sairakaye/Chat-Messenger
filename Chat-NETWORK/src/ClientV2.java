@@ -440,18 +440,24 @@ public class ClientV2 extends JFrame {
                             toSend += message[i] + " ";
 
 
-                        if (openedChatrooms == null) {
-                            openedChatrooms = new ArrayList<>();
-                            openedChatrooms.add(new Chatroom(message[1], out, userName, openedChatrooms));
-                            openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
-                        } else {
-                            for (Chatroom c : openedChatrooms) {
-                                if (c.getChatroomName().equalsIgnoreCase(message[1])) {
-                                    c.appendMessage(toSend);
-                                    out.writeObject("GET_NAMES_IN_CR " + message[1]);
-                                    out.flush();
+                        if (!message[1].equalsIgnoreCase("REJECTED")) {
+                            if (openedChatrooms == null) {
+                                openedChatrooms = new ArrayList<>();
+                                openedChatrooms.add(new Chatroom(message[1], out, userName, openedChatrooms));
+                                openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
+                            } else {
+                                for (Chatroom c : openedChatrooms) {
+                                    if (c.getChatroomName().equalsIgnoreCase(message[1])) {
+                                        c.appendMessage(toSend);
+                                        out.writeObject("GET_NAMES_IN_CR " + message[1]);
+                                        out.flush();
+                                    }
                                 }
                             }
+                        } else {
+                            PasswordDialog pd = new PasswordDialog(listChatroom.getSelectedValue(), clientName, out);
+                            pd.getLblIncorrectPassword().setVisible(true);
+                            pd.setVisible(true);
                         }
                     } else if (line.startsWith("NAMES_IN_GC")) {
                         String[] message = line.trim().split("\\s+");
