@@ -26,8 +26,6 @@ public class Chatroom extends JFrame {
 	private JScrollPane messageScrollPane;
 	private JScrollPane userScrollPane;
 
-	private ArrayList<Chatroom> openedChatrooms;
-
 	/*
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -43,20 +41,12 @@ public class Chatroom extends JFrame {
 	}
 	*/
 
-	public Chatroom(String chatroomName, ObjectOutputStream out, String user, ArrayList<Chatroom> openedChatrooms) {
+	public Chatroom(String chatroomName, ObjectOutputStream out, String user) {
 		this.setTitle("Chatroom: " + chatroomName);
 		this.out = out;
 		this.user = user;
 		this.chatroomName = chatroomName;
-		this.openedChatrooms = openedChatrooms;
-		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		this.addWindowListener(new java.awt.event.WindowAdapter() {
-			@Override
-			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				openedChatrooms.remove(this);
-				Chatroom.super.dispose();
-			}
-		});
+		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		setBounds(100, 100, 600, 500);
 		contentPane = new JPanel();
 		contentPane.setBackground(new Color(255, 255, 255));

@@ -152,7 +152,7 @@ public class ClientV2 extends JFrame {
         btnPrivateMessage.addActionListener(arg0 -> {
             if (privateChatWindows == null) {
                 privateChatWindows = new ArrayList<>();
-                privateChatWindows.add(new PrivateChat(listOnline.getSelectedValue(), out, clientName, privateChatWindows));
+                privateChatWindows.add(new PrivateChat(listOnline.getSelectedValue(), out, clientName));
             } else {
                 for (PrivateChat p : privateChatWindows) {
                     if (p.getToPMUser().equalsIgnoreCase(listOnline.getSelectedValue()))
@@ -367,12 +367,16 @@ public class ClientV2 extends JFrame {
 
                         if (privateChatWindows == null) {
                             privateChatWindows = new ArrayList<>();
-                            privateChatWindows.add(new PrivateChat(message[1], out, userName, privateChatWindows));
+                            privateChatWindows.add(new PrivateChat(message[1], out, userName));
                             privateChatWindows.get(privateChatWindows.size() - 1).appendMessage(toSend);
                         } else {
                             for (PrivateChat p : privateChatWindows) {
-                                if (p.getToPMUser().equalsIgnoreCase(message[1]))
+                                if (p.getToPMUser().equalsIgnoreCase(message[1])) {
                                     p.appendMessage(toSend);
+
+                                    if (p.isVisible() == false)
+                                        p.setVisible(true);
+                                }
                             }
                         }
                     } else if (line.startsWith("TO_GC")) {
@@ -381,7 +385,7 @@ public class ClientV2 extends JFrame {
 
                         if (groupChatWindows == null) {
                             groupChatWindows = new ArrayList<>();
-                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel, groupChatWindows));
+                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel));
 
                             for (int i = 2; i < message.length; i++)
                                 groupChatWindows.get(groupChatWindows.size() - 1).getUserListModel().addElement(message[i]);
@@ -398,13 +402,17 @@ public class ClientV2 extends JFrame {
                             for (GroupChat c : groupChatWindows)
                                 if (c.getID().equalsIgnoreCase(message[1])) {
                                     c.appendMessage(toSend);
+
+                                    if (c.isVisible() == false)
+                                        c.setVisible(true);
+
                                     out.writeObject("GET_NAMES_IN_GC " + message[1]);
                                     out.flush();
                                     break;
                                 }
                         } else {
                             groupChatWindows = new ArrayList<>();
-                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel, groupChatWindows));
+                            groupChatWindows.add(new GroupChat(message[1], out, userName, onlineListModel));
                             groupChatWindows.get(groupChatWindows.size() - 1).appendMessage(toSend);
                         }
                     } else if (line.startsWith("CR_MESSAGE")) {
@@ -417,14 +425,19 @@ public class ClientV2 extends JFrame {
 
                         if (openedChatrooms == null) {
                             openedChatrooms = new ArrayList<>();
-                            openedChatrooms.add(new Chatroom(message[1], out, userName, openedChatrooms));
+                            openedChatrooms.add(new Chatroom(message[1], out, userName));
                             openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
                         } else {
                             for (Chatroom c : openedChatrooms) {
                                 if (c.getChatroomName().equalsIgnoreCase(message[1]))
                                     c.appendMessage(toSend);
+
+                                if (c.isVisible() == false)
+                                    c.setVisible(true);
                                 out.writeObject("GET_NAMES_IN_CR " + message[1]);
                                 out.flush();
+
+
                             }
                         }
 
@@ -443,12 +456,16 @@ public class ClientV2 extends JFrame {
                         if (!message[1].equalsIgnoreCase("REJECTED")) {
                             if (openedChatrooms == null) {
                                 openedChatrooms = new ArrayList<>();
-                                openedChatrooms.add(new Chatroom(message[1], out, userName, openedChatrooms));
+                                openedChatrooms.add(new Chatroom(message[1], out, userName));
                                 openedChatrooms.get(openedChatrooms.size() - 1).appendMessage(toSend);
                             } else {
                                 for (Chatroom c : openedChatrooms) {
                                     if (c.getChatroomName().equalsIgnoreCase(message[1])) {
                                         c.appendMessage(toSend);
+
+                                        if (c.isVisible() == false)
+                                            c.setVisible(true);
+
                                         out.writeObject("GET_NAMES_IN_CR " + message[1]);
                                         out.flush();
                                     }

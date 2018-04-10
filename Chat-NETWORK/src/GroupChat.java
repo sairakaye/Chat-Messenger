@@ -26,21 +26,13 @@ public class GroupChat extends JFrame {
 	private String groupChatID;
 	private JScrollPane usersScrollPane;
 	private JScrollPane messageScrollPane;
-	private ArrayList<GroupChat> openedGroupChat;
 
-	public GroupChat(String groupChatID, ObjectOutputStream out, String user, DefaultListModel onlineListModel, ArrayList<GroupChat> openedGroupChat) {
+	public GroupChat(String groupChatID, ObjectOutputStream out, String user, DefaultListModel onlineListModel) {
 		this.setTitle("Group Chat - ID #" + groupChatID);
 		this.out = out;
 		this.user = user;
 		this.groupChatID = groupChatID;
-		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		this.addWindowListener(new java.awt.event.WindowAdapter() {
-			@Override
-			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				openedGroupChat.remove(this);
-				GroupChat.super.dispose();
-			}
-		});
+		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		setBounds(100, 100, 600, 500);
 		contentPane = new JPanel();
 		contentPane.setBackground(new Color(255, 255, 255));
