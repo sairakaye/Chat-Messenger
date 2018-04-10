@@ -38,20 +38,6 @@ public class GroupChat extends JFrame {
 		this.out = out;
 		this.user = user;
 		this.groupChatID = groupChatID;
-		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		this.addWindowListener(new java.awt.event.WindowAdapter() {
-			@Override
-			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-			try {
-                out.writeObject("GC_DC " + groupChatID + " " + user);
-                out.flush();
-            }catch(Exception ex){
-			    ex.printStackTrace();
-            }
-			openedGroupChat.remove(this);
-			GroupChat.super.dispose();
-			}
-		});
 		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		setBounds(100, 100, 600, 500);
 		contentPane = new JPanel();
