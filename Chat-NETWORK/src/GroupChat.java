@@ -1,3 +1,6 @@
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -5,8 +8,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.Font;
-import java.awt.Color;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class GroupChat extends JFrame {
@@ -101,7 +103,26 @@ public class GroupChat extends JFrame {
 		btnFileTransfer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+				FileDialog dialog = new FileDialog((Frame) null, "Select file to Open");
+				dialog.setVisible(true);
 
+				File[] files = dialog.getFiles();
+
+				File file = files[0];
+
+				try {
+					if(file.exists()) {
+						byte[] content = Files.readAllBytes(file.toPath());
+						String temp = file.getName();
+						String[] name = temp.split("\\.");
+						FileToTransfer ftf = new FileToTransfer(content, name[0], name[1], "GroupChat", groupChatID, "");
+
+						out.writeObject(ftf);
+						out.flush();
+					}
+				} catch(IOException e1) {
+					e1.printStackTrace();
+				}
             }
         });
 		contentPane.add(btnFileTransfer);
@@ -154,6 +175,17 @@ public class GroupChat extends JFrame {
 		btnDownloadFile.setBackground(new Color(0, 0, 128));
 		btnDownloadFile.setBounds(429, 255, 145, 37);
 		contentPane.add(btnDownloadFile);
+		btnDownloadFile.addActionListener(e -> {
+			String name = (String) listFiles.getSelectedValue();
+			String[] temp = name.split("\\.");
+
+			try {
+				out.writeObject("DOWNLOAD_FILE " + temp[0]);
+				out.flush();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		});
 
 		this.setVisible(true);
 	}
@@ -178,6 +210,10 @@ public class GroupChat extends JFrame {
 	public void setDefaultListModel(DefaultListModel model){
 	    listUsersModel = model;
     }
+
+	public DefaultListModel getListFilesModel() {
+		return listFilesModel;
+	}
 
 	//notify server that a user has been added to the group chat user
 	public void addUserSuccess(String user){

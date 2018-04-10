@@ -5,6 +5,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import javax.swing.border.BevelBorder;
 
@@ -119,7 +120,33 @@ public class PrivateChat extends JFrame {
 		btnFileTransfer.setForeground(new Color(255, 255, 255));
 		btnFileTransfer.setFont(new Font("Trebuchet MS", Font.PLAIN, 14));
 		btnFileTransfer.setBounds(344, 347, 201, 27);
+		btnFileTransfer.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				FileDialog dialog = new FileDialog((Frame) null, "Select file to Open");
+				dialog.setVisible(true);
+
+				File[] files = dialog.getFiles();
+
+				File file = files[0];
+
+				try {
+					if(file.exists()) {
+						byte[] content = Files.readAllBytes(file.toPath());
+						String temp = file.getName();
+						String[] name = temp.split("\\.");
+						FileToTransfer ftf = new FileToTransfer(content, name[0], name[1], "Private", toPMUser, user);
+
+						out.writeObject(ftf);
+						out.flush();
+					}
+				} catch(IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
 		contentPane.add(btnFileTransfer);
+
 		
 		filesListModel = new DefaultListModel<>();
 		
@@ -133,6 +160,17 @@ public class PrivateChat extends JFrame {
 		btnDownloadFile.setBackground(new Color(0, 0, 128));
 		btnDownloadFile.setBounds(344, 307, 201, 27);
 		contentPane.add(btnDownloadFile);
+		btnDownloadFile.addActionListener(e -> {
+			String name = (String) listFiles.getSelectedValue();
+			String[] temp = name.split("\\.");
+
+			try {
+				out.writeObject("DOWNLOAD_FILE " + temp[0]);
+				out.flush();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		});
 		
 		filesScrollPane = new JScrollPane();
 		filesScrollPane.setBounds(344, 29, 201, 265);
@@ -148,7 +186,13 @@ public class PrivateChat extends JFrame {
 		return toPMUser;
 	}
 
+	public String getUser() { return user; }
+
 	public void appendMessage(String message) {
 		privateMessageArea.append(message + "\n");
+	}
+
+	public DefaultListModel getFilesListModel() {
+		return filesListModel;
 	}
 }

@@ -388,9 +388,28 @@ public class Server {
 
                             files.add(file);
 
-                            for(ClientInfo client : clients) {
-                                client.getWriter().writeObject("UPLOAD_FILE " + file.getName() + file.getExtension());
-                                client.getWriter().flush();
+                            if (file.getToWhere().equals("")) {
+                                for (ClientInfo client : clients) {
+                                    client.getWriter().writeObject("UPLOAD_FILE " + file.getName() + file.getExtension());
+                                    client.getWriter().flush();
+                                }
+                            }
+                            else if (file.getToWhere().equals("Chatroom")) {
+                                for (ClientInfo client : clients) {
+                                    client.getWriter().writeObject("UPLOAD_TO_CHAT " + file.getName() + file.getExtension() + " " + file.getSpecific());
+                                    client.getWriter().flush();
+                                }
+                            }
+                            else if (file.getToWhere().equals("Private")) {
+                                for (ClientInfo client : clients) {
+                                    client.getWriter().writeObject("UPLOAD_TO_PRIVATE " + file.getName() + file.getExtension() + " " + file.getSpecific() + " " + file.getRecipient());
+                                    client.getWriter().flush();
+                                }
+                            } else if (file.getToWhere().equals("GroupChat")) {
+                                for (ClientInfo client : clients) {
+                                    client.getWriter().writeObject("UPLOAD_TO_GROUP " + file.getName() + file.getExtension() + " " + file.getSpecific());
+                                    client.getWriter().flush();
+                                }
                             }
 
                         }

@@ -177,7 +177,7 @@ public class ClientV2 extends JFrame {
                     byte[] content = Files.readAllBytes(file.toPath());
                     String temp = file.getName();
                     String[] name = temp.split("\\.");
-                    FileToTransfer ftf = new FileToTransfer(content, name[0], name[1]);
+                    FileToTransfer ftf = new FileToTransfer(content, name[0], name[1], "", "", "");
 
                     out.writeObject(ftf);
                     out.flush();
@@ -372,7 +372,7 @@ public class ClientV2 extends JFrame {
                                 if (p.getToPMUser().equalsIgnoreCase(message[1])) {
                                     p.appendMessage(toSend);
 
-                                    if (p.isVisible() == false)
+                                    if (!p.isVisible())
                                         p.setVisible(true);
                                 }
                             }
@@ -539,8 +539,31 @@ public class ClientV2 extends JFrame {
                         }
                     } else if (line.startsWith("UPLOAD_FILE")) {
                         String[] message = line.trim().split("\\s+");
-
                         filesListModel.addElement(message[1]);
+
+                    } else if  (line.startsWith("UPLOAD_TO_CHAT")) {
+                        String[] message = line.trim().split("\\s+");
+
+                        for (Chatroom openedChatroom : openedChatrooms)
+                            if (openedChatroom.getChatroomName().equals(message[2]))
+                                openedChatroom.getFilesListModel().addElement(message[1]);
+
+
+                    } else if  (line.startsWith("UPLOAD_TO_PRIVATE")) {
+                        String[] message = line.trim().split("\\s+");
+
+                        for (PrivateChat privateChat : privateChatWindows)
+                            if (privateChat.getToPMUser().equals(message[2]) || privateChat.getUser().equals(message[3])
+                                    || privateChat.getToPMUser().equals(message[3]) || privateChat.getUser().equals(message[2]))
+                                privateChat.getFilesListModel().addElement(message[1]);
+
+                    } else if  (line.startsWith("UPLOAD_TO_GROUP")) {
+                        String[] message = line.trim().split("\\s+");
+
+                        for (GroupChat groupChat : groupChatWindows)
+                            if (groupChat.getID().equals(message[2]))
+                                groupChat.getListFilesModel().addElement(message[1]);
+
                     }
 
                     if (line.startsWith("DISCONNECT")) {

@@ -1,3 +1,6 @@
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -5,8 +8,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.Font;
-import java.awt.Color;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class Chatroom extends JFrame {
@@ -32,21 +34,6 @@ public class Chatroom extends JFrame {
 	private DefaultListModel filesListModel;
 	private JList listFiles;
 	private JButton btnDownloadFile;
-
-	/*
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					GroupChat frame = new GroupChat("e", null, null );
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-	*/
 
 	public Chatroom(String chatroomName, ObjectOutputStream out, String user) {
 		this.setTitle("Chatroom: " + chatroomName);
@@ -121,7 +108,26 @@ public class Chatroom extends JFrame {
 		btnFileTransfer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+				FileDialog dialog = new FileDialog((Frame) null, "Select file to Open");
+				dialog.setVisible(true);
 
+				File[] files = dialog.getFiles();
+
+				File file = files[0];
+
+				try {
+					if(file.exists()) {
+						byte[] content = Files.readAllBytes(file.toPath());
+						String temp = file.getName();
+						String[] name = temp.split("\\.");
+						FileToTransfer ftf = new FileToTransfer(content, name[0], name[1], "Chatroom", chatroomName, "");
+
+						out.writeObject(ftf);
+						out.flush();
+					}
+				} catch(IOException e1) {
+					e1.printStackTrace();
+				}
             }
         });
 		contentPane.add(btnFileTransfer);
@@ -136,7 +142,7 @@ public class Chatroom extends JFrame {
 		scrollPane.setBounds(431, 189, 143, 87);
 		contentPane.add(scrollPane);
 		
-		filesListModel = new DefaultListModel<>();
+		filesListModel = new DefaultListModel<String>();
 		
 		listFiles = new JList(filesListModel);
 		scrollPane.setViewportView(listFiles);
@@ -152,6 +158,17 @@ public class Chatroom extends JFrame {
 		btnDownloadFile.setBackground(new Color(0, 0, 128));
 		btnDownloadFile.setBounds(429, 289, 145, 37);
 		contentPane.add(btnDownloadFile);
+		btnDownloadFile.addActionListener(e -> {
+			String name = (String) listFiles.getSelectedValue();
+			String[] temp = name.split("\\.");
+
+			try {
+				out.writeObject("DOWNLOAD_FILE " + temp[0]);
+				out.flush();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		});
 
 		this.setVisible(true);
 	}
@@ -167,5 +184,7 @@ public class Chatroom extends JFrame {
 	public DefaultListModel getUserListModel() {
 		return listUsersModel;
 	}
+
+	public DefaultListModel getFilesListModel() { return filesListModel; }
 
 }
