@@ -48,7 +48,6 @@ public class ClientV2 extends JFrame {
      * Launch the application.
      */
     public static void main(String[] args) {
-
         ClientV2 frame = new ClientV2();
        // frame.setVisible(false);
        // frame.setVisible(true);
@@ -297,21 +296,31 @@ public class ClientV2 extends JFrame {
         
     }
 
-    private String getUserName() {
+    private String getServer() {
         return JOptionPane.showInputDialog(
                 this,
-                "Choose a screen name:",
-                "Screen name selection",
-                JOptionPane.PLAIN_MESSAGE);
+                " IP Address of Server",
+                "Enter IP Address of the Server",
+                JOptionPane.QUESTION_MESSAGE);
     }
 
     private synchronized void run() throws IOException {
-
         // Make connection and initialize streams
+        Socket socket = null;
+        String serverAddress = null;
 
-        // Change the server address to the server's IP address if ever.
-        String serverAddress = "localhost";
-        Socket socket = new Socket(serverAddress, 49152);
+        while (socket == null) {
+            try {
+                serverAddress = getServer();
+
+                if (serverAddress == null)
+                    System.exit(0);
+
+                socket = new Socket(serverAddress, 49152);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         out = new ObjectOutputStream(socket.getOutputStream());
         out.flush();

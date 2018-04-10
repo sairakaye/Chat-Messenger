@@ -77,7 +77,7 @@ public class Chatroom extends JFrame {
 		contentPane.add(messageField);
 
 		messageField.addActionListener(new ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+			public void actionPerformed(ActionEvent evt) {
 				try {
 					out.writeObject("TO_CR " + chatroomName + " " + user + ": " + messageField.getText());
 					out.flush();
