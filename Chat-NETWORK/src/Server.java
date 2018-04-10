@@ -339,6 +339,35 @@ public class Server {
                                     serverLog.append("File is being downloaded\n");
                                 }
 
+                            } else if (input.startsWith("GC_DC")){
+                                String[] message = input.trim().split("\\s+");
+                                String key = message[1];
+                                ArrayList<ClientInfo> groupChatUsers = groupChats.get(key);
+                                String remove = message[2];
+                                StringBuilder names = new StringBuilder();
+
+                                int i;
+                                for (i = 0; i < groupChatUsers.size(); i++){
+                                    if (groupChatUsers.get(i).getName().equalsIgnoreCase(remove))
+                                        break;
+                                }
+                                groupChatUsers.remove(i);
+                                groupChatUsers.trimToSize();
+                                /*for (ClientInfo c: groupChatUsers) {
+                                    if (c.getName().equalsIgnoreCase(remove)) {
+                                        groupChatUsers.remove(c);
+                                        break;
+                                    }
+                                    groupChatUsers.trimToSize();
+                                }*/
+
+                                for (ClientInfo c: groupChatUsers)
+                                    names.append(c.getName()).append(" ");
+
+                                System.out.println("Removed " + message[2]);
+                                out.writeObject("UPDATED_GC " + message[1] + " " + names);
+                                out.flush();
+                                System.out.println(names);
                             } else {
                                 for (ClientInfo client : clients) {
                                     client.getWriter().writeObject("MESSAGE " + name + ": " + input);

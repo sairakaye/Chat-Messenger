@@ -27,6 +27,11 @@ public class Chatroom extends JFrame {
 	private JScrollPane userScrollPane;
 
 	private ArrayList<Chatroom> openedChatrooms;
+	private JScrollPane scrollPane;
+	private JLabel lblFiles;
+	private DefaultListModel filesListModel;
+	private JList listFiles;
+	private JButton btnDownloadFile;
 
 	/*
 	public static void main(String[] args) {
@@ -95,7 +100,7 @@ public class Chatroom extends JFrame {
 		listUsers.setBounds(429, 36, 145, 292);
 		
 		userScrollPane = new JScrollPane(listUsers);
-		userScrollPane.setBounds(429, 36, 145, 292);
+		userScrollPane.setBounds(429, 36, 145, 130);
 		contentPane.add(userScrollPane);
 		
 		btnSend = new JButton("Send");
@@ -134,6 +139,27 @@ public class Chatroom extends JFrame {
 		lblChatroomUsers.setHorizontalAlignment(SwingConstants.CENTER);
 		lblChatroomUsers.setBounds(429, 11, 145, 27);
 		contentPane.add(lblChatroomUsers);
+		
+		scrollPane = new JScrollPane();
+		scrollPane.setBounds(431, 189, 143, 87);
+		contentPane.add(scrollPane);
+		
+		filesListModel = new DefaultListModel<>();
+		
+		listFiles = new JList(filesListModel);
+		scrollPane.setViewportView(listFiles);
+		
+		lblFiles = new JLabel("Files");
+		lblFiles.setFont(new Font("Trebuchet MS", Font.BOLD, 14));
+		lblFiles.setBounds(487, 171, 56, 16);
+		contentPane.add(lblFiles);
+		
+		btnDownloadFile = new JButton("Download File");
+		btnDownloadFile.setForeground(Color.WHITE);
+		btnDownloadFile.setFont(new Font("Trebuchet MS", Font.PLAIN, 12));
+		btnDownloadFile.setBackground(new Color(0, 0, 128));
+		btnDownloadFile.setBounds(429, 289, 145, 37);
+		contentPane.add(btnDownloadFile);
 
 		this.setVisible(true);
 	}

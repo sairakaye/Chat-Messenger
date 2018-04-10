@@ -124,7 +124,6 @@ public class ClientV2 extends JFrame {
         onlineListModel = new DefaultListModel<>();
         chatroomListModel = new DefaultListModel<>();
         filesListModel = new DefaultListModel<>();
-       
 
         listOnline = new JList<>(onlineListModel);
         listOnline.setFont(new Font("Calibri", Font.BOLD, 14));
@@ -183,11 +182,10 @@ public class ClientV2 extends JFrame {
 
                     out.writeObject(ftf);
                     out.flush();
-}
-
-} catch(IOException e) {
+                }
+            } catch(IOException e) {
                 e.printStackTrace();
-}
+            }
         });
         btnFileTransfer.setBounds(452, 310, 133, 36);
         contentPane.add(btnFileTransfer);
@@ -450,6 +448,28 @@ public class ClientV2 extends JFrame {
                         if (groupChatWindows != null) {
                             for (GroupChat g : groupChatWindows)
                                 if (message[1].equalsIgnoreCase(g.getID())) {
+                                    for (int i = 2; i < message.length; i++) {
+                                        int j = 0;
+                                        boolean noDuplicate = true;
+                                        while (j < g.getUserListModel().getSize() && noDuplicate) {
+                                            if (g.getUserListModel().get(j).toString().equals(message[i]))
+                                                noDuplicate = false;
+                                            else j++;
+                                        }
+                                        if (noDuplicate)
+                                            g.getUserListModel().addElement(message[i]);
+                                    }
+                                    break;
+                                }
+                        }
+                    } else if (line.startsWith("UPDATED_GC")){
+                        String[] message = line.trim().split("\\s+");
+
+                        if (groupChatWindows != null) {
+                            for (GroupChat g : groupChatWindows)
+                                if (message[1].equalsIgnoreCase(g.getID())) {
+                                    g.getUserListModel().removeAllElements();
+                                    g.refreshListUsers();
                                     for (int i = 2; i < message.length; i++) {
                                         int j = 0;
                                         boolean noDuplicate = true;

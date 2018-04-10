@@ -16,6 +16,7 @@ public class GroupChat extends JFrame {
 	private JTextArea groupMessageArea;
 	private JList listUsers;
 	private DefaultListModel listUsersModel;
+	private DefaultListModel listFilesModel;
 	private JButton btnSend;
 	private JButton btnFileTransfer;
 	private JLabel lblUsersInGroup;
@@ -27,6 +28,10 @@ public class GroupChat extends JFrame {
 	private JScrollPane usersScrollPane;
 	private JScrollPane messageScrollPane;
 	private ArrayList<GroupChat> openedGroupChat;
+	private JLabel lblFiles;
+	private JScrollPane filesScrollPane;
+	private JButton btnDownloadFile;
+	private JList listFiles;
 
 	public GroupChat(String groupChatID, ObjectOutputStream out, String user, DefaultListModel onlineListModel, ArrayList<GroupChat> openedGroupChat) {
 		this.setTitle("Group Chat - ID #" + groupChatID);
@@ -37,8 +42,14 @@ public class GroupChat extends JFrame {
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 			@Override
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				openedGroupChat.remove(this);
-				GroupChat.super.dispose();
+			try {
+                out.writeObject("GC_DC " + groupChatID + " " + user);
+                out.flush();
+            }catch(Exception ex){
+			    ex.printStackTrace();
+            }
+			openedGroupChat.remove(this);
+			GroupChat.super.dispose();
 			}
 		});
 		setBounds(100, 100, 600, 500);
@@ -99,7 +110,7 @@ public class GroupChat extends JFrame {
 		btnFileTransfer.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
 		btnFileTransfer.setForeground(new Color(255, 255, 255));
 		btnFileTransfer.setBackground(new Color(0, 0, 128));
-		btnFileTransfer.setBounds(429, 291, 145, 37);
+		btnFileTransfer.setBounds(429, 296, 145, 37);
 		btnFileTransfer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -132,8 +143,30 @@ public class GroupChat extends JFrame {
 		listUsers.setBounds(429, 36, 145, 244);
 		
 		usersScrollPane = new JScrollPane(listUsers);
-		usersScrollPane.setBounds(429, 36, 145, 244);
+		usersScrollPane.setBounds(431, 27, 145, 121);
 		contentPane.add(usersScrollPane);
+		
+		lblFiles = new JLabel("Files");
+		lblFiles.setHorizontalAlignment(SwingConstants.CENTER);
+		lblFiles.setFont(new Font("Trebuchet MS", Font.BOLD, 14));
+		lblFiles.setBounds(431, 150, 145, 14);
+		contentPane.add(lblFiles);
+		
+		filesScrollPane = new JScrollPane();
+		filesScrollPane.setBounds(431, 170, 143, 75);
+		contentPane.add(filesScrollPane);
+		
+		listFilesModel = new DefaultListModel<>();
+		
+		listFiles = new JList(listFilesModel);
+		filesScrollPane.setViewportView(listFiles);
+		
+		btnDownloadFile = new JButton("Download File");
+		btnDownloadFile.setForeground(Color.WHITE);
+		btnDownloadFile.setFont(new Font("Trebuchet MS", Font.BOLD, 12));
+		btnDownloadFile.setBackground(new Color(0, 0, 128));
+		btnDownloadFile.setBounds(429, 255, 145, 37);
+		contentPane.add(btnDownloadFile);
 
 		this.setVisible(true);
 	}
@@ -142,6 +175,11 @@ public class GroupChat extends JFrame {
 		return groupChatID;
 	}
 
+	public void refreshListUsers(){
+	    listUsers.setModel(listUsersModel);
+	    listUsers.repaint();
+    }
+
 	public void appendMessage(String message) {
 		groupMessageArea.append(message + "\n");
 	}
@@ -149,6 +187,10 @@ public class GroupChat extends JFrame {
 	public DefaultListModel getUserListModel() {
 		return listUsersModel;
 	}
+
+	public void setDefaultListModel(DefaultListModel model){
+	    listUsersModel = model;
+    }
 
 	//notify server that a user has been added to the group chat user
 	public void addUserSuccess(String user){
